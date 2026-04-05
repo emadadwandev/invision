@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/enums/route_status.dart';
 import '../../../../core/enums/visit_status.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -36,35 +37,43 @@ class FieldForceHomePage extends ConsumerWidget {
           _ProfileTab(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedTab,
-        onDestinationSelected: (i) =>
-            ref.read(_fieldForceTabProvider.notifier).state = i,
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.today_outlined),
-            selectedIcon: Icon(Icons.today),
-            label: 'Today',
-          ),
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: unreadCount > 0,
-              label: Text('$unreadCount'),
-              child: const Icon(Icons.notifications_outlined),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          border: Border(top: BorderSide(color: AppColors.outlineVariant, width: 0.5)),
+        ),
+        child: NavigationBar(
+          selectedIndex: selectedTab,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          onDestinationSelected: (i) =>
+              ref.read(_fieldForceTabProvider.notifier).state = i,
+          destinations: [
+            const NavigationDestination(
+              icon: Icon(Icons.today_outlined),
+              selectedIcon: Icon(Icons.today_rounded),
+              label: 'Today',
             ),
-            selectedIcon: Badge(
-              isLabelVisible: unreadCount > 0,
-              label: Text('$unreadCount'),
-              child: const Icon(Icons.notifications),
+            NavigationDestination(
+              icon: Badge(
+                isLabelVisible: unreadCount > 0,
+                label: Text('$unreadCount'),
+                child: const Icon(Icons.notifications_outlined),
+              ),
+              selectedIcon: Badge(
+                isLabelVisible: unreadCount > 0,
+                label: Text('$unreadCount'),
+                child: const Icon(Icons.notifications_rounded),
+              ),
+              label: 'Notifications',
             ),
-            label: 'Notifications',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+            const NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person_rounded),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -82,19 +91,59 @@ class _TodayTab extends ConsumerWidget {
     final user = ref.watch(authProvider).user;
     final trackingState = ref.watch(gpsTrackingControllerProvider);
 
+    final unreadAsync = ref.watch(unreadNotificationCountProvider);
+    final unreadCount = unreadAsync.valueOrNull ?? 0;
+    final tt = Theme.of(context).textTheme;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Hi, ${user?.name.split(' ').first ?? 'there'} 👋'),
-        centerTitle: false,
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Good Morning',
+              style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+            Text(
+              user?.name.split(' ').first ?? 'there',
+              style: tt.titleLarge?.copyWith(color: AppColors.onSurface),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () =>
-                ref.read(_fieldForceTabProvider.notifier).state = 1,
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, size: 26),
+                color: AppColors.onSurface,
+                onPressed: () =>
+                    ref.read(_fieldForceTabProvider.notifier).state = 1,
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: RefreshIndicator(
+        color: AppColors.primary,
         onRefresh: () async {
           ref.invalidate(myRouteTodayProvider);
           ref.invalidate(activeDutyProvider);
@@ -127,53 +176,67 @@ class _DutyCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isActive = trackingState.isDutyActive;
-    final color = isActive ? Colors.green : Colors.grey;
+    final tt = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.secondary : AppColors.outline,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  isActive ? 'On Duty' : 'Off Duty',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                ),
-                const Spacer(),
-                if (isActive && trackingState.lastPosition != null)
-                  Chip(
-                    avatar: const Icon(Icons.gps_fixed, size: 16),
-                    label: Text(
-                      trackingState.lastPosition!.speed > 0
-                          ? '${(trackingState.lastPosition!.speed * 3.6).toStringAsFixed(1)} km/h'
-                          : 'GPS Active',
-                      style: const TextStyle(fontSize: 11),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isActive ? 'On Duty' : 'Off Duty',
+                style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: isActive ? AppColors.secondary : AppColors.onSurfaceVariant,
                     ),
-                    backgroundColor: Colors.green.shade50,
-                    padding: EdgeInsets.zero,
+              ),
+              const Spacer(),
+              if (isActive && trackingState.lastPosition != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryContainer,
+                    borderRadius: BorderRadius.circular(100),
                   ),
-              ],
-            ),
-            if (trackingState.error != null) ...[
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.gps_fixed, size: 12, color: AppColors.onSecondaryContainer),
+                      const SizedBox(width: 4),
+                      Text(
+                        trackingState.lastPosition!.speed > 0
+                            ? '${(trackingState.lastPosition!.speed * 3.6).toStringAsFixed(1)} km/h'
+                            : 'GPS Active',
+                        style: tt.labelSmall?.copyWith(
+                          color: AppColors.onSecondaryContainer,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          if (trackingState.error != null) ...[
               const SizedBox(height: 8),
               Text(
                 trackingState.error!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
+                style: const TextStyle(color: AppColors.error, fontSize: 12),
               ),
             ],
             const SizedBox(height: 12),
@@ -198,7 +261,7 @@ class _DutyCard extends ConsumerWidget {
                           ),
                           FilledButton(
                             style: FilledButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: AppColors.error,
                             ),
                             onPressed: () => Navigator.pop(ctx, true),
                             child: const Text('End Duty'),
@@ -214,15 +277,17 @@ class _DutyCard extends ConsumerWidget {
                 icon: Icon(isActive ? Icons.stop_circle_outlined : Icons.play_circle_outline),
                 label: Text(isActive ? 'End Duty' : 'Start Duty'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: isActive ? Colors.red : Colors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  backgroundColor: isActive ? AppColors.error : AppColors.secondary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -240,23 +305,33 @@ class _TodayRouteSection extends ConsumerWidget {
     return todayAsync.when(
       data: (instance) {
         if (instance == null) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                children: [
-                  Icon(Icons.route, size: 56, color: Colors.grey.shade400),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No route assigned for today',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: Colors.grey),
-                    textAlign: TextAlign.center,
+          return Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                ],
-              ),
+                  child: const Icon(Icons.route_rounded, size: 32, color: AppColors.outline),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No route assigned for today',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(color: AppColors.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           );
         }
@@ -268,13 +343,14 @@ class _TodayRouteSection extends ConsumerWidget {
           child: CircularProgressIndicator(),
         ),
       ),
-      error: (e, _) => Card(
-        color: Colors.red.shade50,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text('Error loading route: $e',
-              style: const TextStyle(color: Colors.red)),
+      error: (e, _) => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.errorContainer,
+          borderRadius: BorderRadius.circular(12),
         ),
+        child: Text('Error loading route: $e',
+            style: const TextStyle(color: AppColors.error)),
       ),
     );
   }
@@ -450,69 +526,72 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Route header card
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        instance.routePlanName ?? 'Route #${instance.routePlanId}',
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      instance.routePlanName ?? 'Route #${instance.routePlanId}',
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700, color: AppColors.onSurface),
                     ),
-                    _StatusBadge(status: instance.status),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Progress bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: instance.completionPercentage / 100,
-                    backgroundColor: Colors.grey.shade200,
-                    minHeight: 8,
                   ),
+                  _StatusBadge(status: instance.status),
+                ],
+              ),
+              const SizedBox(height: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: LinearProgressIndicator(
+                  value: instance.completionPercentage / 100,
+                  backgroundColor: AppColors.surfaceContainerHigh,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  minHeight: 7,
                 ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${instance.completedVisits} of ${instance.totalVisits} visits',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    Text(
-                      '${instance.completionPercentage.toStringAsFixed(0)}%',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                if (notStarted) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _loading ? null : _startRoute,
-                      icon: _loading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.start),
-                      label: const Text('Start Route'),
-                    ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${instance.completedVisits} of ${instance.totalVisits} visits',
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: AppColors.onSurfaceVariant),
+                  ),
+                  Text(
+                    '${instance.completionPercentage.toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.primary, fontWeight: FontWeight.w700, letterSpacing: 0),
                   ),
                 ],
+              ),
+              if (notStarted) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _loading ? null : _startRoute,
+                    icon: _loading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Start Route'),
+                  ),
+                ),
               ],
-            ),
+            ],
           ),
         ),
 
@@ -520,12 +599,13 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
 
         // Store visits
         if (instance.visits.isNotEmpty) ...[
+          const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               'Store Visits',
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold, color: Colors.grey[700]),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700, color: AppColors.onSurface),
             ),
           ),
           ...instance.visits.map(
@@ -570,90 +650,94 @@ class _StoreVisitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final store = visit.store;
     final isCompleted = visit.status == VisitStatus.completed;
     final isCheckedIn = visit.status == VisitStatus.checkedIn;
     final isSkipped = visit.status == VisitStatus.skipped;
     final isPending = visit.status == VisitStatus.pending;
+    final tt = Theme.of(context).textTheme;
 
-    return Card(
+    final borderColor = isCompleted
+        ? AppColors.secondary
+        : isCheckedIn
+            ? AppColors.primaryContainer
+            : AppColors.outlineVariant;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      color: isCompleted
-          ? Colors.green.shade50
-          : isSkipped
-              ? Colors.grey.shade100
-              : null,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Visit number badge
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isCompleted
-                        ? Colors.green
-                        : isSkipped
-                            ? Colors.grey
-                            : theme.colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: isCompleted
-                      ? const Icon(Icons.check, color: Colors.white, size: 18)
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        border: Border(left: BorderSide(color: borderColor, width: 4)),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Visit number badge
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? AppColors.secondary
                       : isSkipped
-                          ? const Icon(Icons.skip_next,
-                              color: Colors.white, size: 18)
-                          : Text(
-                              '$index',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14),
-                            ),
+                          ? AppColors.outline
+                          : AppColors.primary,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: onOpenStore,
-                        child: Text(
-                          store?.name ?? 'Store #${visit.storeId}',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
+                alignment: Alignment.center,
+                child: isCompleted
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                    : isSkipped
+                        ? const Icon(Icons.skip_next_rounded, color: Colors.white, size: 18)
+                        : Text(
+                            '$index',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14),
                           ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: onOpenStore,
+                      child: Text(
+                        store?.name ?? 'Store #${visit.storeId}',
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.primary,
                         ),
                       ),
-                      if (store?.address != null)
-                        Text(
-                          store!.address!,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: Colors.grey[600]),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      if (store?.areaName != null)
-                        Text(
-                          store!.areaName!,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: Colors.grey[500]),
-                        ),
-                    ],
-                  ),
+                    ),
+                    if (store?.address != null)
+                      Text(
+                        store!.address!,
+                        style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (store?.areaName != null)
+                      Text(
+                        store!.areaName!,
+                        style: tt.bodySmall?.copyWith(color: AppColors.outline),
+                      ),
+                  ],
                 ),
-                _VisitStatusChip(status: visit.status),
-              ],
-            ),
+              ),
+              _VisitStatusChip(status: visit.status),
+            ],
+          ),
 
             // Check-in/out times
             if (visit.checkedInAt != null || visit.checkedOutAt != null) ...[
@@ -665,21 +749,21 @@ class _StoreVisitCard extends StatelessWidget {
                   icon: Icons.login,
                   label: 'Checked In',
                   time: visit.checkedInAt!,
-                  color: Colors.blue,
+                  color: AppColors.primaryContainer,
                 ),
               if (visit.checkedOutAt != null)
                 _TimeRow(
                   icon: Icons.logout,
                   label: 'Checked Out',
                   time: visit.checkedOutAt!,
-                  color: Colors.green,
+                  color: AppColors.secondary,
                 ),
               if (visit.durationMinutes != null)
                 _TimeRow(
                   icon: Icons.timer_outlined,
                   label: 'Duration',
                   time: '${visit.durationMinutes} min',
-                  color: Colors.orange,
+                  color: AppColors.tertiary,
                 ),
             ],
 
@@ -687,8 +771,8 @@ class _StoreVisitCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'Reason: ${visit.skipReason}',
-                style: TextStyle(
-                    fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.onSurfaceVariant, fontStyle: FontStyle.italic),
               ),
             ],
 
@@ -704,7 +788,7 @@ class _StoreVisitCard extends StatelessWidget {
                     _ActionButton(
                       icon: Icons.navigation_outlined,
                       label: 'Navigate',
-                      color: Colors.indigo,
+                      color: AppColors.primary,
                       onPressed: onNavigate,
                     ),
                   // Check-in (only when pending, route in progress)
@@ -712,7 +796,7 @@ class _StoreVisitCard extends StatelessWidget {
                     _ActionButton(
                       icon: Icons.login,
                       label: 'Check In',
-                      color: Colors.blue,
+                      color: AppColors.primaryContainer,
                       onPressed: onCheckIn,
                     ),
                   // Check-out (only when checked-in)
@@ -720,13 +804,13 @@ class _StoreVisitCard extends StatelessWidget {
                     _ActionButton(
                       icon: Icons.logout,
                       label: 'Check Out',
-                      color: Colors.green,
+                      color: AppColors.secondary,
                       onPressed: onCheckOut,
                     ),
                     _ActionButton(
                       icon: Icons.point_of_sale,
                       label: 'Create Order',
-                      color: Colors.orange,
+                      color: AppColors.tertiary,
                       onPressed: () => context.push('/sales/create'),
                     ),
                   ],
@@ -735,7 +819,7 @@ class _StoreVisitCard extends StatelessWidget {
                     _ActionButton(
                       icon: Icons.skip_next,
                       label: 'Skip',
-                      color: Colors.grey,
+                      color: AppColors.outline,
                       onPressed: onSkip,
                     ),
                 ],
@@ -743,8 +827,7 @@ class _StoreVisitCard extends StatelessWidget {
             ],
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -774,55 +857,89 @@ class _NotificationsTab extends ConsumerWidget {
           ),
         ],
       ),
+      backgroundColor: AppColors.background,
       body: notificationsAsync.when(
         data: (notifications) => notifications.isEmpty
-            ? const Center(
+            ? Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.notifications_none, size: 56, color: Colors.grey),
-                    SizedBox(height: 12),
-                    Text('No notifications'),
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.notifications_none_rounded,
+                          size: 32, color: AppColors.outline),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('No notifications',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(color: AppColors.onSurfaceVariant)),
                   ],
                 ),
               )
             : RefreshIndicator(
+                color: AppColors.primary,
                 onRefresh: () async {
                   ref.invalidate(myNotificationsProvider);
                   ref.invalidate(unreadNotificationCountProvider);
                 },
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   itemCount: notifications.length,
                   itemBuilder: (context, i) {
                     final n = notifications[i];
-                    return Card(
+                    return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      color: n.isRead
-                          ? null
-                          : Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withAlpha(40),
+                      decoration: BoxDecoration(
+                        color: n.isRead
+                            ? AppColors.surfaceContainerLowest
+                            : AppColors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(12),
+                        border: n.isRead
+                            ? null
+                            : const Border(
+                                left: BorderSide(
+                                    color: AppColors.primaryContainer,
+                                    width: 3)),
+                      ),
                       child: ListTile(
-                        leading: Icon(
-                          n.type.icon,
-                          color: n.isRead ? Colors.grey : n.type.color,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 4),
+                        leading: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: n.isRead
+                                ? AppColors.surfaceContainerHigh
+                                : AppColors.primaryContainer.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(n.type.icon, size: 18,
+                              color: n.isRead ? AppColors.outline : AppColors.primaryContainer),
                         ),
                         title: Text(n.title,
-                            style: TextStyle(
-                                fontWeight: n.isRead
-                                    ? FontWeight.normal
-                                    : FontWeight.bold)),
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700,
+                                color: AppColors.onSurface)),
                         subtitle: n.body != null
-                            ? Text(n.body!, maxLines: 2, overflow: TextOverflow.ellipsis)
+                            ? Text(n.body!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: AppColors.onSurfaceVariant))
                             : null,
                         trailing: !n.isRead
                             ? Container(
                                 width: 8,
                                 height: 8,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primary,
                                   shape: BoxShape.circle,
                                 ),
                               )
@@ -840,7 +957,7 @@ class _NotificationsTab extends ConsumerWidget {
                   },
                 ),
               ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -858,117 +975,136 @@ class _ProfileTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
     final trackingState = ref.watch(gpsTrackingControllerProvider);
+    final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0,
+        title: Text('Profile', style: tt.titleLarge?.copyWith(color: AppColors.onSurface)),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // Avatar + name card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: Text(
-                      _initials(user?.name ?? ''),
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold),
-                    ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryContainer]),
+                    borderRadius: BorderRadius.circular(20),
                   ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _initials(user?.name ?? ''),
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, fontFamily: 'Manrope'),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  user?.name ?? '-',
+                  style: tt.headlineSmall?.copyWith(color: AppColors.onSurface),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user?.email ?? '',
+                  style: tt.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
+                ),
+                if (user?.role != null) ...[
                   const SizedBox(height: 12),
-                  Text(
-                    user?.name ?? '-',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user?.email ?? '',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.grey[600]),
-                  ),
-                  if (user?.role != null) ...[
-                    const SizedBox(height: 8),
-                    Chip(
-                      label: Text(_roleLabel(user!.role!)),
-                      backgroundColor:
-                          Theme.of(context).colorScheme.secondaryContainer,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryContainer,
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                  ],
+                    child: Text(
+                      _roleLabel(user!.role!),
+                      style: tt.labelMedium?.copyWith(color: AppColors.onSecondaryContainer),
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
 
           const SizedBox(height: 12),
 
           // GPS tracking status
-          Card(
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: ListTile(
-              leading: Icon(
-                trackingState.isDutyActive ? Icons.gps_fixed : Icons.gps_off,
-                color: trackingState.isDutyActive ? Colors.green : Colors.grey,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              leading: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: trackingState.isDutyActive
+                      ? AppColors.secondaryContainer
+                      : AppColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  trackingState.isDutyActive ? Icons.gps_fixed : Icons.gps_off,
+                  color: trackingState.isDutyActive
+                      ? AppColors.secondary
+                      : AppColors.outline,
+                  size: 18,
+                ),
               ),
               title: Text(
-                  trackingState.isDutyActive ? 'On Duty' : 'Off Duty'),
-              subtitle: Text(trackingState.isDutyActive
-                  ? 'GPS tracking is active'
-                  : 'Start duty on the Today tab'),
+                trackingState.isDutyActive ? 'On Duty' : 'Off Duty',
+                style: tt.titleSmall?.copyWith(color: AppColors.onSurface),
+              ),
+              subtitle: Text(
+                trackingState.isDutyActive
+                    ? 'GPS tracking is active'
+                    : 'Start duty on the Today tab',
+                style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+              ),
             ),
           ),
 
           const SizedBox(height: 4),
 
           // Settings
-          Card(
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('Language'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push('/language'),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.sync),
-                  title: const Text('Sync Status'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push('/sync'),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.checklist),
-                  title: const Text('My Assigned Tasks'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push('/assigned-tasks'),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.receipt_long),
-                  title: const Text('My Orders'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push('/my-orders'),
-                ),
+                _ProfileTile(icon: Icons.language_rounded, label: 'Language', onTap: () => context.push('/language')),
+                Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1, indent: 54),
+                _ProfileTile(icon: Icons.sync_rounded, label: 'Sync Status', onTap: () => context.push('/sync')),
+                Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1, indent: 54),
+                _ProfileTile(icon: Icons.checklist_rounded, label: 'My Assigned Tasks', onTap: () => context.push('/assigned-tasks')),
+                Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1, indent: 54),
+                _ProfileTile(icon: Icons.receipt_long_rounded, label: 'My Orders', onTap: () => context.push('/my-orders')),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
           // Logout
-          OutlinedButton.icon(
-            onPressed: () async {
+          GestureDetector(
+            onTap: () async {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
@@ -980,8 +1116,7 @@ class _ProfileTab extends ConsumerWidget {
                       child: const Text('Cancel'),
                     ),
                     FilledButton(
-                      style: FilledButton.styleFrom(
-                          backgroundColor: Colors.red),
+                      style: FilledButton.styleFrom(backgroundColor: AppColors.error),
                       onPressed: () => Navigator.pop(ctx, true),
                       child: const Text('Logout'),
                     ),
@@ -993,11 +1128,23 @@ class _ProfileTab extends ConsumerWidget {
                 if (context.mounted) context.go('/login');
               }
             },
-            icon: const Icon(Icons.logout, color: Colors.red),
-            label: const Text('Logout', style: TextStyle(color: Colors.red)),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.red),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: AppColors.errorContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.logout_rounded, color: AppColors.onErrorContainer, size: 18),
+                  const SizedBox(width: 8),
+                  Text('Logout',
+                      style: tt.labelLarge?.copyWith(color: AppColors.onErrorContainer)),
+                ],
+              ),
             ),
           ),
         ],
@@ -1038,23 +1185,54 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, bg) = switch (status) {
-      RouteStatus.inProgress => (Colors.blue.shade800, Colors.blue.shade100),
-      RouteStatus.completed => (Colors.green.shade800, Colors.green.shade100),
-      RouteStatus.published => (Colors.orange.shade800, Colors.orange.shade100),
-      RouteStatus.cancelled => (Colors.red.shade800, Colors.red.shade100),
-      _ => (Colors.grey.shade800, Colors.grey.shade200),
+      RouteStatus.inProgress => (AppColors.primaryContainer, AppColors.primaryContainer.withOpacity(0.15)),
+      RouteStatus.completed => (AppColors.secondary, AppColors.secondaryContainer),
+      RouteStatus.published => (AppColors.tertiary, AppColors.tertiaryContainer.withOpacity(0.25)),
+      RouteStatus.cancelled => (AppColors.error, AppColors.errorContainer),
+      _ => (AppColors.onSurfaceVariant, AppColors.surfaceContainerHigh),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: Text(
         status.label,
         style: TextStyle(
-            color: color, fontSize: 11, fontWeight: FontWeight.w600),
+            color: color, fontSize: 11, fontWeight: FontWeight.w700),
       ),
+    );
+  }
+}
+
+class _ProfileTile extends StatelessWidget {
+  const _ProfileTile({required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: AppColors.onSurfaceVariant, size: 18),
+      ),
+      title: Text(label,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w500)),
+      trailing: const Icon(Icons.chevron_right_rounded,
+          color: AppColors.outline, size: 18),
+      onTap: onTap,
     );
   }
 }
@@ -1067,15 +1245,14 @@ class _VisitStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, bg, icon) = switch (status) {
-      VisitStatus.pending => (Colors.grey.shade700, Colors.grey.shade200, Icons.circle_outlined),
-      VisitStatus.checkedIn => (Colors.blue.shade800, Colors.blue.shade100, Icons.login),
-      VisitStatus.completed => (Colors.green.shade800, Colors.green.shade100, Icons.check_circle),
-      VisitStatus.skipped => (Colors.red.shade800, Colors.red.shade100, Icons.skip_next),
+      VisitStatus.pending => (AppColors.onSurfaceVariant, AppColors.surfaceContainerHigh, Icons.circle_outlined),
+      VisitStatus.checkedIn => (AppColors.primaryContainer, AppColors.primaryContainer.withOpacity(0.15), Icons.login_rounded),
+      VisitStatus.completed => (AppColors.secondary, AppColors.secondaryContainer, Icons.check_circle_rounded),
+      VisitStatus.skipped => (AppColors.error, AppColors.errorContainer, Icons.skip_next_rounded),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-          color: bg, borderRadius: BorderRadius.circular(10)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1083,9 +1260,7 @@ class _VisitStatusChip extends StatelessWidget {
           const SizedBox(width: 3),
           Text(status.label,
               style: TextStyle(
-                  color: color,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600)),
+                  color: color, fontSize: 10, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -1107,15 +1282,25 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 16, color: color),
-      label: Text(label, style: TextStyle(color: color, fontSize: 12)),
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: color.withAlpha(120)),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 5),
+            Text(label,
+                style: TextStyle(
+                    color: color, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+          ],
+        ),
       ),
     );
   }
@@ -1151,7 +1336,7 @@ class _TimeRow extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text('$label: ',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
           Text(displayTime,
               style: TextStyle(
                   fontSize: 12, color: color, fontWeight: FontWeight.w500)),

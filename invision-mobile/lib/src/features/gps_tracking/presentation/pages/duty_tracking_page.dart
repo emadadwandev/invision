@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/theme/app_theme.dart';
 import '../providers/gps_tracking_providers.dart';
 
 class DutyTrackingPage extends ConsumerWidget {
@@ -11,50 +13,61 @@ class DutyTrackingPage extends ConsumerWidget {
     final activeDutyAsync = ref.watch(activeDutyProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Duty Tracking')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Duty Tracking',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Status Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Icon(
-                      trackingState.isDutyActive
-                          ? Icons.gps_fixed
-                          : Icons.gps_off,
-                      size: 64,
-                      color: trackingState.isDutyActive
-                          ? Colors.green
-                          : Colors.grey,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      trackingState.isDutyActive
-                          ? 'On Duty'
-                          : 'Off Duty',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: trackingState.isDutyActive
-                                ? Colors.green
-                                : Colors.grey,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      trackingState.isDutyActive
-                          ? 'GPS tracking is active'
-                          : 'Start duty to begin GPS tracking',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                  ],
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: trackingState.isDutyActive
+                      ? AppColors.secondary.withOpacity(0.4)
+                      : AppColors.outlineVariant.withOpacity(0.5),
                 ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    trackingState.isDutyActive
+                        ? Icons.gps_fixed_rounded
+                        : Icons.gps_off_rounded,
+                    size: 64,
+                    color: trackingState.isDutyActive
+                        ? AppColors.secondary
+                        : AppColors.outline,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    trackingState.isDutyActive ? 'On Duty' : 'Off Duty',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: trackingState.isDutyActive
+                              ? AppColors.secondary
+                              : AppColors.onSurfaceVariant,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    trackingState.isDutyActive
+                        ? 'GPS tracking is active'
+                        : 'Start duty to begin GPS tracking',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                  ),
+                ],
               ),
             ),
 
@@ -62,52 +75,39 @@ class DutyTrackingPage extends ConsumerWidget {
 
             // GPS Stats
             if (trackingState.isDutyActive) ...[
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'GPS Status',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      _statusRow(
-                        context,
-                        'Tracking',
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.outlineVariant.withOpacity(0.4)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('GPS Status',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+                    _statusRow(context, 'Tracking',
                         trackingState.isTracking ? 'Active' : 'Paused',
-                        trackingState.isTracking
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
-                      const Divider(),
-                      _statusRow(
-                        context,
-                        'Last Position',
+                        trackingState.isTracking ? AppColors.secondary : AppColors.tertiary),
+                    const Divider(color: AppColors.outlineVariant, height: 20),
+                    _statusRow(context, 'Last Position',
                         trackingState.lastPosition != null
                             ? '${trackingState.lastPosition!.latitude.toStringAsFixed(6)}, ${trackingState.lastPosition!.longitude.toStringAsFixed(6)}'
                             : 'Acquiring...',
-                        null,
-                      ),
-                      const Divider(),
-                      _statusRow(
-                        context,
-                        'Pending Logs',
-                        '${trackingState.pendingLogs}',
-                        null,
-                      ),
-                      if (trackingState.lastPosition?.speed != null) ...[
-                        const Divider(),
-                        _statusRow(
-                          context,
-                          'Speed',
+                        null),
+                    const Divider(color: AppColors.outlineVariant, height: 20),
+                    _statusRow(context, 'Pending Logs',
+                        '${trackingState.pendingLogs}', null),
+                    if (trackingState.lastPosition?.speed != null) ...[
+                      const Divider(color: AppColors.outlineVariant, height: 20),
+                      _statusRow(context, 'Speed',
                           '${(trackingState.lastPosition!.speed * 3.6).toStringAsFixed(1)} km/h',
-                          null,
-                        ),
-                      ],
+                          null),
                     ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -118,18 +118,16 @@ class DutyTrackingPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.errorContainer,
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red),
+                    const Icon(Icons.error_outline_rounded, color: AppColors.error),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        trackingState.error!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
+                      child: Text(trackingState.error!,
+                          style: const TextStyle(color: AppColors.error)),
                     ),
                   ],
                 ),
@@ -154,52 +152,58 @@ class DutyTrackingPage extends ConsumerWidget {
             ),
 
             // Start/End Duty Button
-            SizedBox(
-              height: 56,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  final controller =
-                      ref.read(gpsTrackingControllerProvider.notifier);
-                  if (trackingState.isDutyActive) {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('End Duty?'),
-                        content: const Text(
-                          'GPS tracking will stop and your duty session will be recorded.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('End Duty'),
-                          ),
-                        ],
+            GestureDetector(
+              onTap: () async {
+                final controller =
+                    ref.read(gpsTrackingControllerProvider.notifier);
+                if (trackingState.isDutyActive) {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('End Duty?'),
+                      content: const Text(
+                        'GPS tracking will stop and your duty session will be recorded.',
                       ),
-                    );
-                    if (confirm == true) {
-                      await controller.endDuty();
-                    }
-                  } else {
-                    await controller.startDuty();
-                  }
-                },
-                icon: Icon(
-                  trackingState.isDutyActive
-                      ? Icons.stop_circle
-                      : Icons.play_circle,
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('End Duty'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) await controller.endDuty();
+                } else {
+                  await controller.startDuty();
+                }
+              },
+              child: Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  color: trackingState.isDutyActive ? AppColors.error : AppColors.secondary,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                label: Text(
-                  trackingState.isDutyActive ? 'End Duty' : 'Start Duty',
-                  style: const TextStyle(fontSize: 18),
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: trackingState.isDutyActive
-                      ? Colors.red
-                      : Colors.green,
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      trackingState.isDutyActive
+                          ? Icons.stop_circle_rounded
+                          : Icons.play_circle_rounded,
+                      color: Colors.white, size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      trackingState.isDutyActive ? 'End Duty' : 'Start Duty',
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/sync_engine.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/offline_providers.dart';
 
 class SyncStatusPage extends ConsumerWidget {
@@ -14,98 +15,191 @@ class SyncStatusPage extends ConsumerWidget {
     final pendingAsync = ref.watch(pendingActionsCountProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Sync Status'),
+        title: Text('Sync Status',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sync Now',
-            onPressed: () {
+          GestureDetector(
+            onTap: () {
               final engine = ref.read(syncEngineProvider);
               engine.syncNow();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Sync triggered')),
-              );
+                  const SnackBar(content: Text('Sync triggered')));
             },
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.sync_rounded, color: Colors.white, size: 16),
+                  SizedBox(width: 4),
+                  Text('Sync', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Connection status card
-          Card(
-            child: ListTile(
-              leading: Icon(
-                isOnline ? Icons.wifi : Icons.wifi_off,
-                color: isOnline ? Colors.green : Colors.red,
-                size: 32,
-              ),
-              title: Text(isOnline ? 'Online' : 'Offline'),
-              subtitle: Text(
-                isOnline
-                    ? 'Connected to the server'
-                    : 'Changes will be saved locally and synced when online',
-              ),
+          // Connection status
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(
+                    color: isOnline
+                        ? AppColors.secondary.withOpacity(0.1)
+                        : AppColors.errorContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+                    color: isOnline ? AppColors.secondary : AppColors.error,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(isOnline ? 'Online' : 'Offline',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: isOnline ? AppColors.secondary : AppColors.error)),
+                      const SizedBox(height: 2),
+                      Text(
+                        isOnline
+                            ? 'Connected to the server'
+                            : 'Changes will be saved locally and synced when online',
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
-
           // Sync status card
           syncAsync.when(
             data: (status) => _SyncInfoCard(status: status),
-            loading: () => const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(child: CircularProgressIndicator()),
+            loading: () => Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(14),
               ),
+              child: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
             ),
-            error: (_, __) => const Card(
-              child: ListTile(
-                leading: Icon(Icons.info_outline),
-                title: Text('No sync activity yet'),
+            error: (_, __) => Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, color: AppColors.outline),
+                  SizedBox(width: 10),
+                  Text('No sync activity yet',
+                      style: TextStyle(color: AppColors.onSurfaceVariant)),
+                ],
               ),
             ),
           ),
           const SizedBox(height: 12),
-
           // Pending actions
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.pending_actions, size: 32),
-              title: const Text('Pending Actions'),
-              trailing: pendingAsync.when(
-                data: (count) => Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: count > 0 ? Colors.orange : Colors.green,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.pending_actions_rounded, size: 32, color: AppColors.primary),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Pending Actions',
+                          style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+                      Text('Actions waiting to be synced',
+                          style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                    ],
                   ),
                 ),
-                loading: () =>
-                    const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                error: (_, __) => const Text('—'),
-              ),
-              subtitle: const Text('Actions waiting to be synced'),
+                pendingAsync.when(
+                  data: (count) => Text(
+                    '$count',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: count > 0 ? AppColors.tertiary : AppColors.secondary,
+                    ),
+                  ),
+                  loading: () => const SizedBox.square(
+                      dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                  error: (_, __) => const Text('—'),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
-
-          // Actions
-          FilledButton.icon(
-            onPressed: isOnline
-                ? () {
-                    final engine = ref.read(syncEngineProvider);
-                    engine.syncNow();
-                  }
+          // Force Sync button
+          GestureDetector(
+            onTap: isOnline
+                ? () => ref.read(syncEngineProvider).syncNow()
                 : null,
-            icon: const Icon(Icons.cloud_upload),
-            label: const Text('Force Sync Now'),
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: isOnline
+                    ? const LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryContainer])
+                    : null,
+                color: isOnline ? null : AppColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_upload_rounded,
+                      color: isOnline ? Colors.white : AppColors.outline, size: 18),
+                  const SizedBox(width: 6),
+                  Text('Force Sync Now',
+                      style: TextStyle(
+                          color: isOnline ? Colors.white : AppColors.outline,
+                          fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () async {
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () async {
               final db = ref.read(offlineDatabaseProvider);
               await db.resetFailedActions();
               ref.invalidate(pendingActionsCountProvider);
@@ -115,8 +209,24 @@ class SyncStatusPage extends ConsumerWidget {
                 );
               }
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry Failed Actions'),
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.outlineVariant),
+              ),
+              alignment: Alignment.center,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.refresh_rounded, size: 16, color: AppColors.primary),
+                  SizedBox(width: 6),
+                  Text('Retry Failed Actions',
+                      style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -131,47 +241,46 @@ class _SyncInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (status.isSyncing) ...[
-                  const SizedBox.square(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (status.isSyncing) ...[
+                const SizedBox.square(
                     dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text('Syncing...'),
-                ] else ...[
-                  Icon(
-                    Icons.check_circle,
-                    color: status.hasPending ? Colors.orange : Colors.green,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    status.hasPending ? 'Pending changes' : 'All synced',
-                  ),
-                ],
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+                const SizedBox(width: 12),
+                const Text('Syncing...',
+                    style: TextStyle(color: AppColors.onSurfaceVariant)),
+              ] else ...[
+                Icon(Icons.check_circle_rounded,
+                    color: status.hasPending ? AppColors.tertiary : AppColors.secondary),
+                const SizedBox(width: 12),
+                Text(status.hasPending ? 'Pending changes' : 'All synced',
+                    style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
               ],
-            ),
-            const SizedBox(height: 12),
-            _InfoRow(
-              label: 'Connection',
-              value: status.isOnline ? 'Online' : 'Offline',
-              valueColor: status.isOnline ? Colors.green : Colors.red,
-            ),
-            _InfoRow(
-              label: 'Pending Actions',
-              value: '${status.pendingActions}',
-              valueColor:
-                  status.pendingActions > 0 ? Colors.orange : Colors.green,
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _InfoRow(
+            label: 'Connection',
+            value: status.isOnline ? 'Online' : 'Offline',
+            valueColor: status.isOnline ? AppColors.secondary : AppColors.error,
+          ),
+          _InfoRow(
+            label: 'Pending Actions',
+            value: '${status.pendingActions}',
+            valueColor: status.pendingActions > 0 ? AppColors.tertiary : AppColors.secondary,
+          ),
+        ],
       ),
     );
   }

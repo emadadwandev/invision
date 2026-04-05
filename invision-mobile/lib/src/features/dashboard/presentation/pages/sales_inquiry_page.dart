@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/inquiry_models.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -32,11 +33,18 @@ class _SalesInquiryPageState extends ConsumerState<SalesInquiryPage> {
     final orders = ref.watch(salesInquiryProvider(_filter));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sales Inquiry')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Sales Inquiry',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: Column(
         children: [
           Container(
-            color: Colors.grey.shade50,
+            color: AppColors.surfaceContainerLow,
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
@@ -46,10 +54,13 @@ class _SalesInquiryPageState extends ConsumerState<SalesInquiryPage> {
                     controller: _searchCtrl,
                     decoration: InputDecoration(
                       hintText: 'Order #...',
-                      prefixIcon: const Icon(Icons.search, size: 20),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20,
+                          color: AppColors.outline),
                       isDense: true,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                     ),
                     onSubmitted: (_) => setState(() {}),
                   ),
@@ -59,7 +70,8 @@ class _SalesInquiryPageState extends ConsumerState<SalesInquiryPage> {
                   child: DropdownButtonFormField<String>(
                     key: ValueKey(_status),
                     initialValue: _status,
-                    decoration: const InputDecoration(labelText: 'Status', isDense: true, border: OutlineInputBorder()),
+                    decoration: const InputDecoration(
+                        labelText: 'Status', isDense: true),
                     items: const [
                       DropdownMenuItem(value: null, child: Text('All')),
                       DropdownMenuItem(value: 'draft', child: Text('Draft')),
@@ -77,7 +89,8 @@ class _SalesInquiryPageState extends ConsumerState<SalesInquiryPage> {
           Expanded(
             child: orders.when(
               data: (list) => _OrderList(orders: list),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary)),
               error: (e, _) => Center(child: Text('Error: $e')),
             ),
           ),
@@ -103,46 +116,70 @@ class _OrderList extends StatelessWidget {
       itemBuilder: (_, i) {
         final o = orders[i];
         final statusColor = switch (o.status) {
-          'delivered' => Colors.green,
-          'cancelled' => Colors.red,
-          'confirmed' => Colors.blue,
-          'pending' => Colors.orange,
-          _ => Colors.grey,
+          'delivered' => AppColors.secondary,
+          'cancelled' => AppColors.error,
+          'confirmed' => AppColors.primaryContainer,
+          'pending' => AppColors.tertiary,
+          _ => AppColors.outline,
         };
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(o.orderNumber, style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'monospace', fontSize: 13)),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(o.status.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: statusColor)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text('${o.storeName ?? '-'}  ·  ${o.salesperson ?? '-'}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                Text(o.createdAt, style: TextStyle(fontSize: 11, color: Colors.grey.shade400)),
-                const Divider(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _Val(label: 'Total', value: _currency.format(o.total)),
-                    _Val(label: 'Paid', value: _currency.format(o.paid), color: Colors.green),
-                    _Val(label: 'Balance', value: _currency.format(o.balanceDue), color: o.balanceDue > 0 ? Colors.red : null),
-                  ],
-                ),
-              ],
-            ),
+        final statusBg = switch (o.status) {
+          'delivered' => AppColors.secondaryContainer,
+          'cancelled' => AppColors.errorContainer,
+          'confirmed' => AppColors.surfaceContainerLow,
+          'pending' => AppColors.tertiaryContainer.withOpacity(0.3),
+          _ => AppColors.surfaceContainerHigh,
+        };
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(14),
+            border: Border(left: BorderSide(color: statusColor, width: 3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(o.orderNumber,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'monospace',
+                          fontSize: 13, color: AppColors.onSurface)),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                        color: statusBg, borderRadius: BorderRadius.circular(100)),
+                    child: Text(o.status.toUpperCase(),
+                        style: TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.w700,
+                            color: statusColor)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text('${o.storeName ?? '-'}  ·  ${o.salesperson ?? '-'}',
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.onSurfaceVariant)),
+              Text(o.createdAt,
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.outline)),
+              const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(color: AppColors.outlineVariant, height: 1)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _Val(label: 'Total', value: _currency.format(o.total)),
+                  _Val(label: 'Paid', value: _currency.format(o.paid),
+                      color: AppColors.secondary),
+                  _Val(label: 'Balance',
+                      value: _currency.format(o.balanceDue),
+                      color: o.balanceDue > 0 ? AppColors.error : null),
+                ],
+              ),
+            ],
           ),
         );
       },
@@ -160,9 +197,13 @@ class _Val extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+        Text(label,
+            style: const TextStyle(fontSize: 10, color: AppColors.outline)),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+        Text(value,
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w700, color: color
+                    ?? AppColors.onSurface)),
       ],
     );
   }

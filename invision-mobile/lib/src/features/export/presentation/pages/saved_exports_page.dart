@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../providers/export_providers.dart';
 
 class SavedExportsPage extends ConsumerWidget {
@@ -11,19 +12,32 @@ class SavedExportsPage extends ConsumerWidget {
     final exportsAsync = ref.watch(savedExportsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Export History')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Export History',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: exportsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (exports) {
           if (exports.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No exports yet'),
+                  Container(
+                    width: 64, height: 64,
+                    decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(16)),
+                    child: const Icon(Icons.history_rounded, size: 32, color: AppColors.outline),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text('No exports yet',
+                      style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
                 ],
               ),
             );
@@ -33,36 +47,72 @@ class SavedExportsPage extends ConsumerWidget {
             itemCount: exports.length,
             itemBuilder: (context, index) {
               final export = exports[index];
-              return Card(
+              return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: _formatColor(export.format).withValues(alpha: 0.1),
-                    child: Icon(_formatIcon(export.format), color: _formatColor(export.format)),
-                  ),
-                  title: Text(export.title),
-                  subtitle: Text('${export.formatLabel} • ${export.formattedSize}\n${_formatDateTime(export.createdAt)}'),
-                  isThreeLine: true,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Delete Export'),
-                          content: const Text('Remove this export record?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
-                          ],
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44, height: 44,
+                      decoration: BoxDecoration(
+                        color: _formatColor(export.format).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(_formatIcon(export.format),
+                          color: _formatColor(export.format), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(export.title,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, color: AppColors.onSurface, fontSize: 13)),
+                          const SizedBox(height: 2),
+                          Text('${export.formatLabel} · ${export.formattedSize}',
+                              style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                          Text(_formatDateTime(export.createdAt),
+                              style: const TextStyle(fontSize: 11, color: AppColors.outline)),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Delete Export'),
+                            content: const Text('Remove this export record?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel')),
+                              TextButton(onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text('Delete')),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await ref.read(exportRepositoryProvider).deleteSavedExport(export.id);
+                          ref.invalidate(savedExportsProvider);
+                        }
+                      },
+                      child: Container(
+                        width: 36, height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.errorContainer,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
-                      if (confirm == true) {
-                        await ref.read(exportRepositoryProvider).deleteSavedExport(export.id);
-                        ref.invalidate(savedExportsProvider);
-                      }
-                    },
-                  ),
+                        child: const Icon(Icons.delete_outline_rounded,
+                            color: AppColors.error, size: 18),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -85,12 +135,12 @@ class SavedExportsPage extends ConsumerWidget {
 
   Color _formatColor(String format) {
     return switch (format) {
-      'csv' => Colors.teal,
-      'excel' => Colors.green,
-      'pdf' => Colors.red,
-      'presentation' => Colors.blue,
-      'html' => Colors.orange,
-      _ => Colors.grey,
+      'csv' => AppColors.secondary,
+      'excel' => AppColors.secondary,
+      'pdf' => AppColors.error,
+      'presentation' => AppColors.primaryContainer,
+      'html' => AppColors.tertiary,
+      _ => AppColors.outline,
     };
   }
 

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Field Force Navigator - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#001a41",
+                    "secondary": "#1b6d24",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#004493",
+                    "primary-container": "#1a73e8",
+                    "on-secondary-container": "#217128",
+                    "primary-fixed-dim": "#adc7ff",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#cfe6f2",
+                    "surface-container-high": "#d5ecf8",
+                    "tertiary-container": "#d14900",
+                    "outline": "#727785",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "on-tertiary-fixed": "#380d00",
+                    "surface-container-low": "#e6f6ff",
+                    "tertiary": "#a83900",
+                    "on-secondary-fixed-variant": "#005312",
+                    "inverse-surface": "#1e333c",
+                    "inverse-primary": "#adc7ff",
+                    "outline-variant": "#c1c6d6",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "inverse-on-surface": "#dff4ff",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#005bc0",
+                    "secondary-fixed": "#a3f69c",
+                    "background": "#f3faff",
+                    "on-primary-container": "#ffffff",
+                    "surface-bright": "#f3faff",
+                    "surface-container": "#dbf1fe",
+                    "surface": "#f3faff",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#d8e2ff",
+                    "on-background": "#071e27",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#a0f399",
+                    "primary": "#005bbf",
+                    "surface-container-highest": "#cfe6f2",
+                    "on-surface": "#071e27",
+                    "on-surface-variant": "#414754",
+                    "secondary-fixed-dim": "#88d982",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-tertiary-container": "#ffffff",
+                    "on-secondary-fixed": "#002204",
+                    "surface-dim": "#c7dde9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .headline { font-family: 'Manrope', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-xl sticky top-0 z-40 w-full">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-container-high flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Professional corporate headshot of a business executive with a confident expression in a bright modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrgibmYphlxbrLZnlaySNcbqCELQ8Hc5Mdn6pVm_CzyGDptdMz7wycGuYUbTb_R9HCx-V1Kn98M9zhCLMaDS7Ga5_UyHX2ub5kceIJRcX-TUnAzchYi5IbsvdszHtSM3PJbfGzVqpV90QHnD0ApM3YI-tmDUkdIwAgO-MPiKYTiR1oJ2jUX1RXcaPEf7VAy1GUIGeSGwzZz8BjhtaCcYFCMOmGOY_0bgjOUyfiFmwBB8tehxln_qad5TQk0Jun8V_6AIHPS8QchQ32"/>
+</div>
+<h1 class="text-xl font-bold text-on-surface tracking-tight">Dashboard</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-highest/20 transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">logout</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-screen-2xl mx-auto px-6 py-6 space-y-8">
+<!-- Period Selector -->
+<section class="flex flex-wrap items-center gap-2">
+<button class="px-6 py-2.5 rounded-full bg-primary-container text-on-primary-container font-semibold text-sm transition-transform active:scale-95 duration-150">Week</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest/30 transition-transform active:scale-95 duration-150">Month</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest/30 transition-transform active:scale-95 duration-150">Quarter</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest/30 transition-transform active:scale-95 duration-150">Year</button>
+</section>
+<!-- KPI Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Overview Group -->
+<div class="md:col-span-4 space-y-4">
+<h2 class="text-on-surface font-bold text-lg px-2 flex items-center gap-2">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span> Overview
+                </h2>
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl transition-all hover:bg-surface-container-low">
+<p class="text-on-surface-variant text-sm font-medium mb-1">Total Stores</p>
+<div class="flex items-end justify-between">
+<span class="text-4xl font-extrabold text-on-surface tracking-tight">1,284</span>
+<span class="text-secondary font-bold text-sm bg-secondary-container px-3 py-1 rounded-full">+12%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl transition-all hover:bg-surface-container-low">
+<p class="text-on-surface-variant text-sm font-medium mb-1">Active Reps</p>
+<div class="flex items-end justify-between">
+<span class="text-4xl font-extrabold text-on-surface tracking-tight">42</span>
+<span class="text-on-surface-variant font-medium text-xs">98% Deployment</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sales Group -->
+<div class="md:col-span-8 space-y-4">
+<h2 class="text-on-surface font-bold text-lg px-2 flex items-center gap-2">
+<span class="w-1.5 h-6 bg-tertiary rounded-full"></span> Sales Performance
+                </h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="bg-gradient-to-br from-primary to-primary-container p-6 rounded-xl text-on-primary shadow-lg shadow-primary/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-3xl">payments</span>
+<span class="text-xs font-bold bg-white/20 px-2 py-1 rounded">LIVE</span>
+</div>
+<p class="text-on-primary/80 text-sm font-medium mb-1">Total Revenue</p>
+<span class="text-4xl font-extrabold tracking-tight">$428.5k</span>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl transition-all hover:bg-surface-container-low flex flex-col justify-between">
+<div>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Target Completion %</p>
+<span class="text-4xl font-extrabold text-on-surface tracking-tight">84.2%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-4 overflow-hidden">
+<div class="bg-primary h-full w-[84.2%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Routes Execution -->
+<div class="md:col-span-12 space-y-4">
+<h2 class="text-on-surface font-bold text-lg px-2 flex items-center gap-2">
+<span class="w-1.5 h-6 bg-secondary rounded-full"></span> Field Logistics
+                </h2>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-secondary">
+<p class="text-on-surface-variant text-sm font-medium">Execution %</p>
+<span class="text-3xl font-extrabold text-on-surface">91.5%</span>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-primary">
+<p class="text-on-surface-variant text-sm font-medium">Completion Rate</p>
+<span class="text-3xl font-extrabold text-on-surface">94/110</span>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-tertiary">
+<p class="text-on-surface-variant text-sm font-medium">Missed Visits</p>
+<span class="text-3xl font-extrabold text-error">16</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Inquiry Tiles (Visual Layout) -->
+<section class="space-y-4">
+<h2 class="text-on-surface font-bold text-lg px-2">Deep Insights</h2>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+<div class="group relative h-48 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Interior of a modern high-end grocery store with organized aisles and clean bright lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvvMeysEp7-sk07OkjPp1gMymRXGHzEwNGjtgD5p6HtMnEHq79-yHtqPvE1zX4tRSNPGpLI_3uCUt3zU6SJmhUJxtBg8sHMK77AqI3k9_jsoMAue2geUyH83abtBHrvQ7_1Dh1jxiLeIMva7CtLL0OeLfnw-doTpEynKWPG_KMmOxRbrP68WQjzgLTh0KjpLnJ-CMwtmJhdcSazJRJb2eB8iCJnoZImSGodSWmsY4dM3eYXgyOfKmUi0FhyNqOykVcQuuDLqWW0Nu4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h3 class="text-white font-bold text-xl">Store Inquiry</h3>
+<p class="text-white/70 text-sm">Analyze retail health</p>
+</div>
+</div>
+<div class="group relative h-48 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A tablet displaying financial charts and data visualizations with a focus on growth trends" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBW0O5iC1Bz1vnuaL0sdmCJKXC1mfYe3FV7-vlpm_V3u1ny99H4KGF7jziivVWl4iGzMzxrdaTU1bKsi_Oncdv8fPXXldXp1NyfchfNFNO5vs_Ufe1kLdqRsnLqVvimQBYrnBLDaTBzwzQZmWP4peo477wc3FupU7eE6nEKzkFW9a3KQ80EKxxI9cF_VDkHfx3WCSuK-Gy2wwReOIFAYRKfJWggtB31eLJgVntATYEHg_XgZRYVguzfpC0YdR2TObfaX2xIBT73AZC"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h3 class="text-white font-bold text-xl">Sales Inquiry</h3>
+<p class="text-white/70 text-sm">Review pipeline velocity</p>
+</div>
+</div>
+<div class="group relative h-48 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Top down view of a digital map with highlighted routes and location markers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNmM6c1P2ZJA4nWUUJU2WECBGJOIZgi4byZJui5UX78LeUccjIFUUZ4mqgyOMvazo93vxmjpnN0cjZWBoRK_WfI8AyZsLJIoaPX7Y1A7b5yLYwRbQfGGSblvEph685qNg5vh0CFaiG1tqPeLufq1YHypNKrl6OtafptgQx8OjE_LMrNo0XC5j5p90cbotNfFq2AHMi88QUmNdMxAHKQEIyff6M9roLkrZIIKibjtNXeZ-aTO5_iFuqzm1MuKYiWXu1nBdWBzZHze5g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<h3 class="text-white font-bold text-xl">Route Inquiry</h3>
+<p class="text-white/70 text-sm">Optimize field movement</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Access Chips -->
+<section class="space-y-4">
+<h2 class="text-on-surface-variant font-bold text-sm tracking-widest uppercase px-2">Quick Navigation</h2>
+<div class="flex flex-wrap gap-3">
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">storefront</span> Stores
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">inventory_2</span> Products
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">map</span> Routes
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">campaign</span> Campaigns
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">monitoring</span> Sales
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">point_of_sale</span> POS
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">admin_panel_settings</span> Command Center
+                </button>
+<button class="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/10 hover:border-primary transition-colors text-on-surface font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">description</span> Reports
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-4 bg-surface/80 backdrop-blur-xl rounded-t-xl shadow-lg">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-2xl p-2 active:scale-95 duration-150 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest/30 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-medium mt-1">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest/30 transition-all" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="text-[10px] font-medium mt-1">Center</span>
+</a>
+</nav>
+</body></html>

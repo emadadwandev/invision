@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/export_models.dart';
 import '../providers/export_providers.dart';
 
@@ -12,25 +13,40 @@ class ReportTemplatesPage extends ConsumerWidget {
     final templatesAsync = ref.watch(reportTemplatesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Report Templates')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Report Templates',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateDialog(context, ref),
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: templatesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (templates) {
           if (templates.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.description_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No report templates yet'),
-                  SizedBox(height: 8),
-                  Text('Create your first custom report template', style: TextStyle(color: Colors.grey)),
+                  Container(
+                    width: 64, height: 64,
+                    decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(16)),
+                    child: const Icon(Icons.description_outlined, size: 32, color: AppColors.outline),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('No report templates yet',
+                      style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+                  const SizedBox(height: 6),
+                  const Text('Create your first custom report template',
+                      style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13)),
                 ],
               ),
             );
@@ -108,75 +124,91 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(_typeIcon(template.type), color: _typeColor(template.type)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    template.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(color: AppColors.primary.withOpacity(0.05),
+              blurRadius: 6, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                  color: _typeColor(template.type).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                if (template.isFavorite) const Icon(Icons.star, color: Colors.amber, size: 20),
-                if (template.isShared) const Icon(Icons.people, color: Colors.blue, size: 20),
-              ],
-            ),
-            if (template.description != null) ...[
-              const SizedBox(height: 8),
-              Text(template.description!, style: Theme.of(context).textTheme.bodySmall),
+                child: Icon(_typeIcon(template.type), color: _typeColor(template.type), size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  template.name,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                ),
+              ),
+              if (template.isFavorite)
+                const Icon(Icons.star_rounded, color: Color(0xFFFFA000), size: 20),
+              if (template.isShared)
+                const Icon(Icons.people_rounded, color: AppColors.primaryContainer, size: 20),
             ],
+          ),
+          if (template.description != null) ...[
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Chip(
-                  label: Text(template.type.replaceAll('_', ' ').toUpperCase()),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                ),
-                const Spacer(),
-                if (template.lastGeneratedAt != null)
-                  Text(
-                    'Last: ${_formatDate(template.lastGeneratedAt!)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                  ),
-              ],
-            ),
-            const Divider(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _ActionButton(
-                  icon: Icons.play_arrow,
-                  label: 'Generate',
-                  onTap: () => _generate(context),
-                ),
-                _ActionButton(
-                  icon: Icons.grid_on,
-                  label: 'Excel',
-                  onTap: () => _exportExcel(context),
-                ),
-                _ActionButton(
-                  icon: Icons.picture_as_pdf,
-                  label: 'PDF',
-                  onTap: () => _exportPdf(context),
-                ),
-                _ActionButton(
-                  icon: Icons.table_chart,
-                  label: 'CSV',
-                  onTap: () => _exportCsv(context),
-                ),
-              ],
-            ),
+            Text(template.description!,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: AppColors.onSurfaceVariant)),
           ],
-        ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _typeColor(template.type).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  template.type.replaceAll('_', ' ').toUpperCase(),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                      color: _typeColor(template.type)),
+                ),
+              ),
+              const Spacer(),
+              if (template.lastGeneratedAt != null)
+                Text(
+                  'Last: ${_formatDate(template.lastGeneratedAt!)}',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: AppColors.onSurfaceVariant),
+                ),
+            ],
+          ),
+          const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(color: AppColors.outlineVariant, height: 1)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _ActionButton(icon: Icons.play_arrow_rounded, label: 'Generate',
+                  onTap: () => _generate(context)),
+              _ActionButton(icon: Icons.grid_on_rounded, label: 'Excel',
+                  onTap: () => _exportExcel(context)),
+              _ActionButton(icon: Icons.picture_as_pdf_rounded, label: 'PDF',
+                  onTap: () => _exportPdf(context)),
+              _ActionButton(icon: Icons.table_chart_rounded, label: 'CSV',
+                  onTap: () => _exportCsv(context)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -249,10 +281,10 @@ class _TemplateCard extends StatelessWidget {
 
   Color _typeColor(String type) {
     return switch (type) {
-      'overview' => Colors.blue,
-      'sales' => Colors.green,
-      'field_activity' => Colors.orange,
-      _ => Colors.purple,
+      'overview' => AppColors.primaryContainer,
+      'sales' => AppColors.secondary,
+      'field_activity' => AppColors.tertiary,
+      _ => AppColors.primary,
     };
   }
 

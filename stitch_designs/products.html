@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#d5ecf8",
+                    "primary-fixed-dim": "#adc7ff",
+                    "surface-container-low": "#e6f6ff",
+                    "surface-container-highest": "#cfe6f2",
+                    "outline-variant": "#c1c6d6",
+                    "inverse-primary": "#adc7ff",
+                    "error": "#ba1a1a",
+                    "on-surface": "#071e27",
+                    "outline": "#727785",
+                    "on-secondary-container": "#217128",
+                    "inverse-surface": "#1e333c",
+                    "on-secondary-fixed": "#002204",
+                    "on-primary-fixed-variant": "#004493",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#071e27",
+                    "background": "#f3faff",
+                    "surface-tint": "#005bc0",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#414754",
+                    "secondary-fixed-dim": "#88d982",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#ffffff",
+                    "surface-bright": "#f3faff",
+                    "inverse-on-surface": "#dff4ff",
+                    "surface-container": "#dbf1fe",
+                    "tertiary-container": "#d14900",
+                    "surface-variant": "#cfe6f2",
+                    "on-secondary-fixed-variant": "#005312",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-tertiary-fixed": "#380d00",
+                    "surface": "#f3faff",
+                    "tertiary": "#a83900",
+                    "secondary": "#1b6d24",
+                    "on-primary-fixed": "#001a41",
+                    "on-primary-container": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb59a",
+                    "secondary-fixed": "#a3f69c",
+                    "primary-fixed": "#d8e2ff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#802a00",
+                    "surface-dim": "#c7dde9",
+                    "primary-container": "#1a73e8",
+                    "secondary-container": "#a0f399",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#005bbf",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl docked full-width top-0 sticky z-40 bg-surface-container-low">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="User Profile" data-alt="Professional headshot of a sales executive in a blue suit with a friendly expression and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPlPfzoHfAbeYyO_UE2inv7aThcR0rj1_9usYqCWmRkmaD-5BW3726uYFowNU9p7N2m9lwptaJ0L-wb_n8EZ6E88Ak_wgbkh8eGsk1Y0i2nISijGLB8l7jYN1VRhB6hG4NvJcElcNFkaHhmylR5e4GHjfNr6AR942hwxqCIfyeVu95Pszfs_61w7BGF1_GNzOYI1qVJYRt94LE68dcRA8OBmMT2WQsk_lxoO54QjORW7fr3FHhvt-dCq3uXbVcE_jgE6mytjoV31QW"/>
+</div>
+<h1 class="text-xl font-bold text-on-surface Manrope tracking-tight">Field Force Navigator</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-xl hover:bg-surface-container-highest/20 transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-screen-2xl mx-auto px-6 pt-6">
+<!-- Search & Filter Section -->
+<div class="mb-8">
+<h2 class="text-2xl font-extrabold text-on-surface mb-6 tracking-tight">Product Catalog</h2>
+<div class="flex flex-col md:flex-row gap-4">
+<div class="relative flex-grow group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="block w-full pl-12 pr-4 py-4 bg-surface-container-lowest border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline-variant transition-all" placeholder="Search name, SKU, or barcode..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+<button class="p-1 rounded-lg hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-primary">barcode_scanner</span>
+</button>
+</div>
+</div>
+<button class="flex items-center justify-center gap-2 px-6 py-4 bg-surface-container-highest text-on-surface font-semibold rounded-xl hover:bg-surface-container-high transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+<span>Filters</span>
+</button>
+</div>
+</div>
+<!-- Catalog Stats / Quick Links -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+<div class="p-4 bg-surface-container-low rounded-xl">
+<p class="text-label-sm text-on-surface-variant mb-1">Total Products</p>
+<p class="text-2xl font-extrabold text-primary">1,284</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<p class="text-label-sm text-on-surface-variant mb-1">In Stock</p>
+<p class="text-2xl font-extrabold text-secondary">942</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<p class="text-label-sm text-on-surface-variant mb-1">Low Inventory</p>
+<p class="text-2xl font-extrabold text-tertiary">12</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<p class="text-label-sm text-on-surface-variant mb-1">Active Promos</p>
+<p class="text-2xl font-extrabold text-primary-container">8</p>
+</div>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+<!-- Product Card 1 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden cursor-pointer hover:bg-surface-container transition-all duration-300">
+<div class="aspect-square relative overflow-hidden bg-surface-container-low">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Premium sleek black wireless headphones with metallic accents on a soft blue gradient background, high-end product shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUVH_s5XyeXUY9sfh-T5QjtX2dNvdGJxrHkMUxQ1V8GNeSzoetSxRhmgwxA5ur_KzxLE8aRTyy9UcTQfaDtfJDR2q__nD-tWZ1safbZ9G32d-r7n2kdIeTvSt6Vo1Vy8mziC4v3b280mxBOGGtJN2IKEqkox5XHHrdzNMJjk-sdTCvqsyXaBSm8rME5_1H1INbYTv203NHPSS94vsJoQ9NFWbCQOqIgxljtwvLIsTW8hIrDx29BlkdvFyCZ_j3yxKiwRb9fxHKGVJb"/>
+<div class="absolute top-3 right-3">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full">In Stock</span>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-label-sm text-primary font-bold uppercase tracking-wider mb-1">Audio Visual</p>
+<h3 class="text-lg font-bold text-on-surface leading-tight">Pro-X Wireless Headphones</h3>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">SKU: PH-90210-BK</span>
+<span class="text-lg font-extrabold text-on-surface">$249.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden cursor-pointer hover:bg-surface-container transition-all duration-300">
+<div class="aspect-square relative overflow-hidden bg-surface-container-low">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Minimalist white smart watch with a clean digital face resting on a light grey stone surface with soft shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0lVzi76QsCODExMnj3IV4xh2AIjJxuk3cNHZydT1eDt12szgTkAgI5Z-LvhY8oP1qZk5-IcFu19u-OSRXUtwx6jIGuwGj6EUEugDl0udmgwWi9j6-AV-2NiC1Y95uRQMPzYbMMePsFAA7-Dj3MO8JDZqIMa0CLHDMDNvQrpcZPSvPX7yutnKQ4-pDbUhFFHxKbra9zZmmpUi6CU0JfrlWqVYghOk3IhFrOHs979JsGbANkCRzI4KPBMeVQugGArIdyg8t9V8WsoqD"/>
+<div class="absolute top-3 right-3">
+<span class="px-3 py-1 bg-tertiary-container text-on-primary-container text-xs font-bold rounded-full">Low Stock</span>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-label-sm text-primary font-bold uppercase tracking-wider mb-1">Wearables</p>
+<h3 class="text-lg font-bold text-on-surface leading-tight">SmartWatch Series 5</h3>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">SKU: SW-5500-WH</span>
+<span class="text-lg font-extrabold text-on-surface">$399.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden cursor-pointer hover:bg-surface-container transition-all duration-300">
+<div class="aspect-square relative overflow-hidden bg-surface-container-low">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Classic brown leather strap watch with a silver dial, sophisticated studio lighting emphasizing the leather texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6oAInMF_x-IheejCTSveSn_8uX2Ren0p14KyWELFu35L6PsWYGRFxBwzNergU1wH0FOzG8g2cXyJOzlg-cnKi2wtnl_5GMXss0gftVWrFEOCRIIInJl5nKzWKfDDnPuOW9Uvkcybidv3oRcDoJmKtwKPQ_Z72qAgHPVRu46-bDQWctJ55g9taOxP1FwJIkOW8M-Ei01zop2YV7xJzMgGPu8cuxzYBnZ3V_akNoyv3gQKX689KUH1CK6iIbh6O6e8M1UgSNnmQj1FP"/>
+<div class="absolute top-3 right-3">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full">In Stock</span>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-label-sm text-primary font-bold uppercase tracking-wider mb-1">Accessories</p>
+<h3 class="text-lg font-bold text-on-surface leading-tight">Executive Leather Watch</h3>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">SKU: EL-1029-BN</span>
+<span class="text-lg font-extrabold text-on-surface">$185.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden cursor-pointer hover:bg-surface-container transition-all duration-300">
+<div class="aspect-square relative overflow-hidden bg-surface-container-low">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Vintage style analog camera with a large glass lens, chrome and leather details, shot in warm afternoon light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALejf9CJoYLB37GUfTbBnawOtlmnvwJpV53SYxJ-RnM_x9_PlaPYtNakasOot3QAK42EQZWmME1NVt3wXuaYeK9wW1Ycn71pR_LPnfBXWe089mFjPR3z8miQRQ0K5WP7l4bVkb-FwoliCAu0lf0kI-yybxL6jErc64siRWPbINfbAogWKOIQsu5qs7dnqya4klAPDFIBMCmbgfTres3rKlX96vqr-R684evmt9Gm56rMhyeN243hDq3D6p9NJRnPpeXk8fvQnLJVuz"/>
+<div class="absolute top-3 right-3">
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant text-xs font-bold rounded-full">Discontinued</span>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-label-sm text-primary font-bold uppercase tracking-wider mb-1">Photography</p>
+<h3 class="text-lg font-bold text-on-surface leading-tight">Retro Lens Master</h3>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">SKU: RL-7700-CM</span>
+<span class="text-lg font-extrabold text-on-surface">$550.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 5 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden cursor-pointer hover:bg-surface-container transition-all duration-300">
+<div class="aspect-square relative overflow-hidden bg-surface-container-low">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Modern ergonomic gaming mouse with vibrant RGB lighting on a dark desk setup, emphasizing sharp edges and carbon fiber texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgMucXPGg-Awk7XXWkULOOyTgt0CwtrQKvQHl9aiFxkM6AfHeQf4Y9nv-NrPIYBsijQzxjIepDR8o6cX-yq-fBP9Eph0OfmmMct4tr82GYZjC7lgl5Ztz-oJQLP44Ik0qWUH6kkk_1arbuJdetipFprmNtVllVfpn1kFOfwQQKCttIezlyJ2cZ5gA4xFwjdihBpd00szdcsDyrEVWGtFh4CFpZxru2dLvcJ8QFFSRptlbfkVvgd2qk7AO90lB6Tq3pXWWhoHClyGjv"/>
+<div class="absolute top-3 right-3">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full">In Stock</span>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-label-sm text-primary font-bold uppercase tracking-wider mb-1">Computing</p>
+<h3 class="text-lg font-bold text-on-surface leading-tight">Neon-G Precision Mouse</h3>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">SKU: MS-RGB-99</span>
+<span class="text-lg font-extrabold text-on-surface">$89.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Product Card 6 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden cursor-pointer hover:bg-surface-container transition-all duration-300">
+<div class="aspect-square relative overflow-hidden bg-surface-container-low">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Sleek modern sunglasses with dark polarized lenses and a matte black frame, clean product shot against a soft blue backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6QkW_6xDKKy8ap-Xu9MMud3-e9qwtb7Bw8rmc2SmDp0HihvvwPbNa34i0aC2kcghYDt3E5ylh-0I07KrDRo4oMIXIDmk4WP-WhvZ03D8r0KnYqqAuKffispm6AwIevLujJSzte5QR0ZkhRWPq3TzGCvm92EVWsjIlVX9YNfvAXkzFOM-9FC2sdlovtLz-3MRBBBA_nXQga1vJ2WhgM74q4cUMNjjWnmYXWK8aQlKHKO3a4BJkPgMJF7o-dcjdmPKwYwFKb1ZmhK1G"/>
+<div class="absolute top-3 right-3">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full">In Stock</span>
+</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<p class="text-label-sm text-primary font-bold uppercase tracking-wider mb-1">Accessories</p>
+<h3 class="text-lg font-bold text-on-surface leading-tight">Horizon Polarized Lenses</h3>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">SKU: AC-HZ-POL</span>
+<span class="text-lg font-extrabold text-on-surface">$120.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More / Pagination -->
+<div class="mt-12 flex justify-center">
+<button class="px-8 py-3 bg-surface-container-highest text-primary font-bold rounded-xl hover:bg-surface-container-high transition-all active:scale-95">
+                Load More Products
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-4 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl docked full-width bottom-0 fixed rounded-t-xl bg-surface-container-low shadow-lg">
+<!-- Today Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-500 p-2 hover:bg-surface-container-highest/30 rounded-2xl transition-transform active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-[10px] font-medium Inter">Today</span>
+</a>
+<!-- Center (Active) Tab -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary/20 text-on-primary-container dark:text-primary-container rounded-2xl p-2 transition-transform active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<span class="text-[10px] font-bold Inter">Center</span>
+</a>
+<!-- Profile Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-500 p-2 hover:bg-surface-container-highest/30 rounded-2xl transition-transform active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium Inter">Profile</span>
+</a>
+</nav>
+<!-- Floating Action Button - Only visible on specific catalog contexts -->
+<div class="fixed bottom-24 right-6 z-50">
+<button class="w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-2xl shadow-xl flex items-center justify-center transition-transform active:scale-90 duration-150 group">
+<span class="material-symbols-outlined text-3xl">add</span>
+<span class="absolute right-full mr-4 px-3 py-1 bg-inverse-surface text-inverse-on-surface rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Add Product</span>
+</button>
+</div>
+</body></html>

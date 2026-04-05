@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../../core/theme/app_theme.dart';
+
 class QrScannerPage extends StatefulWidget {
   const QrScannerPage({super.key, this.title = 'Scan QR / Barcode'});
   final String title;
@@ -37,8 +39,13 @@ class _QrScannerPageState extends State<QrScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        backgroundColor: Colors.black.withOpacity(0.8),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: ValueListenableBuilder(
@@ -46,15 +53,16 @@ class _QrScannerPageState extends State<QrScannerPage> {
               builder: (context, state, _) {
                 return Icon(
                   state.torchState == TorchState.on
-                      ? Icons.flash_on
-                      : Icons.flash_off,
+                      ? Icons.flash_on_rounded
+                      : Icons.flash_off_rounded,
+                  color: Colors.white,
                 );
               },
             ),
             onPressed: () => _controller.toggleTorch(),
           ),
           IconButton(
-            icon: const Icon(Icons.cameraswitch),
+            icon: const Icon(Icons.cameraswitch_rounded, color: Colors.white),
             onPressed: () => _controller.switchCamera(),
           ),
         ],
@@ -96,19 +104,29 @@ class _QrScannerPageState extends State<QrScannerPage> {
               ),
             ),
           ),
-          // Manual entry button
           Positioned(
             bottom: 24,
             left: 16,
             right: 16,
-            child: OutlinedButton.icon(
-              onPressed: () => _showManualEntry(context),
-              icon: const Icon(Icons.keyboard, color: Colors.white),
-              label: const Text('Enter code manually',
-                  style: TextStyle(color: Colors.white)),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white),
-                minimumSize: const Size.fromHeight(48),
+            child: GestureDetector(
+              onTap: () => _showManualEntry(context),
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.6)),
+                ),
+                alignment: Alignment.center,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.keyboard_rounded, color: Colors.white, size: 18),
+                    SizedBox(width: 8),
+                    Text('Enter code manually',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ),
             ),
           ),

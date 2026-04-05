@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../providers/sales_providers.dart';
 
 class CreateOrderPage extends ConsumerStatefulWidget {
@@ -90,7 +91,13 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Order')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Create Order',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -100,7 +107,7 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
               controller: _storeIdController,
               decoration: const InputDecoration(
                 labelText: 'Store ID',
-                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.store_rounded, size: 18, color: AppColors.outline),
               ),
               keyboardType: TextInputType.number,
               validator: (v) =>
@@ -111,24 +118,38 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
               controller: _notesController,
               decoration: const InputDecoration(
                 labelText: 'Notes (optional)',
-                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.note_rounded, size: 18, color: AppColors.outline),
               ),
               maxLines: 2,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Items',
-                    style: Theme.of(context).textTheme.titleMedium),
-                TextButton.icon(
-                  onPressed: _addItem,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Item'),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.onSurface)),
+                GestureDetector(
+                  onTap: _addItem,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 16, color: AppColors.primary),
+                        SizedBox(width: 4),
+                        Text('Add Item',
+                            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             for (int i = 0; i < _items.length; i++)
               _OrderItemWidget(
                 entry: _items[i],
@@ -137,15 +158,32 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
                 onRemove: () => _removeItem(i),
               ),
             const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Create Order'),
+            GestureDetector(
+              onTap: _isSubmitting ? null : _submit,
+              child: Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: _isSubmitting
+                      ? null
+                      : const LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryContainer],
+                        ),
+                  color: _isSubmitting ? AppColors.surfaceContainerHigh : null,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: _isSubmitting
+                      ? null
+                      : [BoxShadow(color: AppColors.primary.withOpacity(0.25), blurRadius: 12, offset: const Offset(0, 4))],
+                ),
+                alignment: Alignment.center,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 22, width: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                      )
+                    : const Text('Create Order',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+              ),
             ),
           ],
         ),
@@ -185,104 +223,103 @@ class _OrderItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Item ${index + 1}',
-                    style: Theme.of(context).textTheme.titleSmall),
-                if (canRemove)
-                  IconButton(
-                    onPressed: onRemove,
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    iconSize: 20,
-                    visualDensity: VisualDensity.compact,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: entry.productIdController,
-                    decoration: const InputDecoration(
-                      labelText: 'Product ID',
-                      border: OutlineInputBorder(),
-                      isDense: true,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Item ${index + 1}',
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+              if (canRemove)
+                GestureDetector(
+                  onTap: onRemove,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.errorContainer,
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
+                    child: const Icon(Icons.delete_rounded, color: AppColors.error, size: 16),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: entry.barcodeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Barcode',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: entry.productIdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Product ID',
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Required' : null,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: entry.barcodeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Barcode',
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: entry.quantityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Qty',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: entry.quantityController,
+                  decoration: const InputDecoration(
+                    labelText: 'Qty',
                   ),
+                  keyboardType: TextInputType.number,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Required' : null,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: entry.unitPriceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Unit Price',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: entry.unitPriceController,
+                  decoration: const InputDecoration(
+                    labelText: 'Unit Price',
                   ),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Required' : null,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextFormField(
-                    controller: entry.discountController,
-                    decoration: const InputDecoration(
-                      labelText: 'Disc %',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextFormField(
+                  controller: entry.discountController,
+                  decoration: const InputDecoration(
+                    labelText: 'Disc %',
                   ),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

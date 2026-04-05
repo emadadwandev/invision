@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/competitor_models.dart';
 import '../providers/competitor_providers.dart';
 
@@ -38,11 +39,17 @@ class _CompetitorAnalysisPageState
     final analysisAsync = ref.watch(competitorAnalysisProvider(_filter));
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Competitor Analysis'),
+        title: Text('Competitor Analysis',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.date_range),
+            icon: const Icon(Icons.date_range_rounded,
+                color: AppColors.onSurface),
             tooltip: 'Filter Date Range',
             onPressed: _pickDateRange,
           ),
@@ -51,9 +58,24 @@ class _CompetitorAnalysisPageState
       body: analysisAsync.when(
         data: (items) {
           if (items.isEmpty) {
-            return const Center(
-              child: Text('No competitor data available.',
-                  style: TextStyle(color: Colors.grey)),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 64, height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.analytics_outlined,
+                        size: 28, color: AppColors.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('No competitor data available.',
+                      style: TextStyle(color: AppColors.onSurfaceVariant)),
+                ],
+              ),
             );
           }
           return RefreshIndicator(
@@ -67,7 +89,8 @@ class _CompetitorAnalysisPageState
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -80,36 +103,50 @@ class _AnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(item.competitor,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold)),
-                Chip(
-                  label: Text('${item.totalObservations} total',
-                      style: const TextStyle(fontSize: 11)),
-                  side: BorderSide.none,
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: 6, offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(item.competitor,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.onSurface)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(100),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: item.types.map((t) => _TypeChip(type: t)).toList(),
-            ),
-          ],
-        ),
+                child: Text('${item.totalObservations} total',
+                    style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: item.types.map((t) => _TypeChip(type: t)).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -121,13 +158,13 @@ class _TypeChip extends StatelessWidget {
 
   Color _typeColor() {
     return switch (type.type) {
-      'sales' => Colors.blue,
-      'posm' => Colors.purple,
-      'pricing' => Colors.green,
-      'display' => Colors.amber,
-      'promotion' => Colors.indigo,
-      'stock_level' => Colors.orange,
-      _ => Colors.grey,
+      'sales' => AppColors.primaryContainer,
+      'posm' => AppColors.primary,
+      'pricing' => AppColors.secondary,
+      'display' => AppColors.tertiary,
+      'promotion' => AppColors.primaryContainer,
+      'stock_level' => AppColors.tertiary,
+      _ => AppColors.outline,
     };
   }
 
@@ -153,10 +190,12 @@ class _TypeChip extends StatelessWidget {
               style: const TextStyle(fontSize: 12)),
           if (type.avgPrice != null)
             Text('Avg: \$${type.avgPrice!.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.onSurfaceVariant)),
           if (type.totalQuantity != null)
             Text('Qty: ${type.totalQuantity}',
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.onSurfaceVariant)),
         ],
       ),
     );

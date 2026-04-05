@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/calendar_models.dart';
 import '../providers/calendar_providers.dart';
 
@@ -19,9 +20,17 @@ class CalendarPage extends ConsumerWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Calendar'),
+          title: Text('Calendar',
+              style: Theme.of(context).textTheme.headlineMedium
+                  ?.copyWith(color: AppColors.onSurface)),
+          backgroundColor: AppColors.surface.withOpacity(0.9),
+          elevation: 0, scrolledUnderElevation: 0,
           bottom: const TabBar(
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.onSurfaceVariant,
+            indicatorColor: AppColors.primary,
             tabs: [
               Tab(text: 'Events'),
               Tab(text: 'Holidays'),
@@ -30,24 +39,31 @@ class CalendarPage extends ConsumerWidget {
         ),
         body: TabBarView(
           children: [
-            // Events tab
             eventsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary)),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (events) => events.isEmpty
-                  ? const Center(child: Text('No events'))
+                  ? const Center(
+                      child: Text('No events',
+                          style: TextStyle(color: AppColors.onSurfaceVariant)))
                   : ListView.builder(
+                      padding: const EdgeInsets.all(12),
                       itemCount: events.length,
-                      itemBuilder: (context, i) => _EventCard(event: events[i]),
+                      itemBuilder: (context, i) =>
+                          _EventCard(event: events[i]),
                     ),
             ),
-            // Holidays tab
             holidaysAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary)),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (holidays) => holidays.isEmpty
-                  ? const Center(child: Text('No holidays'))
+                  ? const Center(
+                      child: Text('No holidays',
+                          style: TextStyle(color: AppColors.onSurfaceVariant)))
                   : ListView.builder(
+                      padding: const EdgeInsets.all(12),
                       itemCount: holidays.length,
                       itemBuilder: (context, i) =>
                           _HolidayTile(holiday: holidays[i]),
@@ -66,16 +82,11 @@ class _EventCard extends StatelessWidget {
 
   Color _typeColor() {
     switch (event.type) {
-      case 'campaign':
-        return Colors.purple;
-      case 'route':
-        return Colors.blue;
-      case 'meeting':
-        return Colors.green;
-      case 'deadline':
-        return Colors.red;
-      default:
-        return Colors.grey;
+      case 'campaign': return AppColors.primary;
+      case 'route': return AppColors.primaryContainer;
+      case 'meeting': return AppColors.secondary;
+      case 'deadline': return AppColors.error;
+      default: return AppColors.outline;
     }
   }
 
@@ -85,37 +96,55 @@ class _EventCard extends StatelessWidget {
         ? Color(int.parse(event.color!.replaceFirst('#', '0xFF')))
         : _typeColor();
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withAlpha(30),
-          child: Icon(Icons.event, color: color, size: 20),
-        ),
-        title: Text(event.title,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              event.allDay
-                  ? _dateFormat.format(event.startAt)
-                  : '${_dateFormat.format(event.startAt)} ${_timeFormat.format(event.startAt)}',
-              style: Theme.of(context).textTheme.bodySmall,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        border: Border(left: BorderSide(color: color, width: 3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: color.withAlpha(20),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(event.type.toUpperCase(),
-                  style: TextStyle(fontSize: 10, color: color)),
+            child: Icon(Icons.event_rounded, color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(event.title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+                const SizedBox(height: 2),
+                Text(
+                  event.allDay
+                      ? _dateFormat.format(event.startAt)
+                      : '${_dateFormat.format(event.startAt)} ${_timeFormat.format(event.startAt)}',
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.onSurfaceVariant),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(event.type.toUpperCase(),
+                      style: TextStyle(
+                          fontSize: 10, color: color, fontWeight: FontWeight.w700)),
+                ),
+              ],
             ),
-          ],
-        ),
-        isThreeLine: true,
+          ),
+        ],
       ),
     );
   }
@@ -140,19 +169,54 @@ class _HolidayTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.orange.shade50,
-        child: Icon(_typeIcon(), color: Colors.orange.shade700, size: 20),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
       ),
-      title: Text(holiday.name),
-      subtitle: Text(_dateFormat.format(holiday.date)),
-      trailing: holiday.isRecurring
-          ? const Chip(
-              label: Text('Annual', style: TextStyle(fontSize: 11)),
-              visualDensity: VisualDensity.compact,
-            )
-          : null,
+      child: Row(
+        children: [
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.tertiary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(_typeIcon(), color: AppColors.tertiary, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(holiday.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+                Text(_dateFormat.format(holiday.date),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.onSurfaceVariant)),
+              ],
+            ),
+          ),
+          if (holiday.isRecurring)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: const Text('Annual',
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: AppColors.onSurfaceVariant,
+                      fontWeight: FontWeight.w600)),
+            ),
+        ],
+      ),
     );
   }
 }

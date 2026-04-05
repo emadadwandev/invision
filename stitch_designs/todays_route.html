@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Today's Route - Precision Navigator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#ffffff",
+                        "primary": "#005bbf",
+                        "surface-container": "#dbf1fe",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f3faff",
+                        "outline-variant": "#c1c6d6",
+                        "primary-container": "#1a73e8",
+                        "tertiary": "#a83900",
+                        "surface-tint": "#005bc0",
+                        "surface-dim": "#c7dde9",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-tertiary-fixed": "#380d00",
+                        "secondary-fixed-dim": "#88d982",
+                        "on-background": "#071e27",
+                        "tertiary-container": "#d14900",
+                        "surface-container-low": "#e6f6ff",
+                        "on-primary-fixed-variant": "#004493",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#002204",
+                        "inverse-surface": "#1e333c",
+                        "on-surface": "#071e27",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#802a00",
+                        "primary-fixed": "#d8e2ff",
+                        "outline": "#727785",
+                        "secondary": "#1b6d24",
+                        "inverse-primary": "#adc7ff",
+                        "on-surface-variant": "#414754",
+                        "surface": "#f3faff",
+                        "on-primary-fixed": "#001a41",
+                        "on-secondary-fixed-variant": "#005312",
+                        "on-tertiary-container": "#ffffff",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-variant": "#cfe6f2",
+                        "surface-container-highest": "#cfe6f2",
+                        "on-secondary-container": "#217128",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#dff4ff",
+                        "surface-container-high": "#d5ecf8",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f3faff",
+                        "secondary-container": "#a0f399",
+                        "secondary-fixed": "#a3f69c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full z-50 bg-[#f3faff]/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center px-6 py-3 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="User Profile Photo" class="w-full h-full object-cover" data-alt="Professional headshot of a field manager in business casual attire with a friendly and confident expression, blurred office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcvV0wTOt7unHsRUMFVjyXgulXgcTbKN14kboT52XOfUbetwEJ1ucWCoSJfkjAxOrVZ5gFXfm3dUDCgd-mO6jTOdQxFPzNIqB_-8Uoa3ahp8hDQ4yjmH9rAOFAd3hoq9Ga6YFewdPATn5qPKy7bzj7lnijNG-9h3_6aySz8R4rGSs97njUTB9hyfwW02Xa98yf9c_3XPW_-vMB5-U-t5xbSL8KYYbeC4ca-XjmonHsBPvlwaPdh1jOrqZK0xplhx_HCzxd90qwYAPw"/>
+</div>
+<span class="text-xl font-bold text-[#071e27] dark:text-blue-50">Precision Navigator</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform hover:bg-blue-50/50 p-2 rounded-full text-[#1A73E8]">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="px-6 py-6 max-w-lg mx-auto">
+<!-- Header Section -->
+<div class="mb-8">
+<h1 class="text-3xl font-extrabold text-on-surface tracking-tight mb-2">Today's Route</h1>
+<p class="text-on-surface-variant font-medium">8 Stores • 12.4 Miles Total</p>
+</div>
+<!-- Hero Action: Start Route -->
+<div class="relative overflow-hidden bg-gradient-to-br from-primary to-primary-container rounded-[2rem] p-8 mb-10 shadow-lg shadow-primary/20">
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-white/70" data-icon="bolt" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-white/80 font-semibold text-sm uppercase tracking-widest">Active Shift</span>
+</div>
+<h2 class="text-white text-2xl font-bold mb-6">Ready to optimize your day?</h2>
+<button class="w-full bg-white text-primary py-4 px-6 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl">
+<span class="material-symbols-outlined" data-icon="play_circle" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+                    Start Route
+                </button>
+</div>
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-[12rem]" data-icon="map">map</span>
+</div>
+</div>
+<!-- Sequence List -->
+<div class="space-y-4">
+<h3 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/60 px-2 mb-2">Planned Stops</h3>
+<!-- Stop Item: Completed -->
+<div class="bg-surface-container-low rounded-3xl p-5 flex items-center gap-4">
+<div class="flex flex-col items-center gap-1">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container text-lg" data-icon="check" style="font-variation-settings: 'FILL' 0; font-weight: 700;">check</span>
+</div>
+<div class="w-0.5 h-8 bg-outline-variant/30"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface">Whole Foods Market</h4>
+<span class="text-[10px] font-bold bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full uppercase tracking-tighter">Completed</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-3">821 Penn Ave, Pittsburgh</p>
+<div class="flex items-center gap-2 text-[10px] text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-xs" data-icon="history">history</span>
+                        Finished at 09:14 AM
+                    </div>
+</div>
+</div>
+<!-- Stop Item: Active/Pending -->
+<div class="bg-surface-container-lowest rounded-3xl p-5 flex items-center gap-4 shadow-sm ring-2 ring-primary/10">
+<div class="flex flex-col items-center gap-1">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">2</div>
+<div class="w-0.5 h-12 bg-outline-variant/30"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-bold text-on-surface text-lg">Target Supercenter</h4>
+<span class="text-[10px] font-bold bg-primary-fixed text-on-primary-fixed-variant px-2 py-0.5 rounded-full uppercase tracking-tighter">Pending</span>
+</div>
+<p class="text-sm text-on-surface-variant mb-4">623 Smithfield St, Pittsburgh</p>
+<div class="flex items-center justify-between">
+<!-- Geofence Indicator -->
+<div class="flex items-center gap-2 px-3 py-1.5 bg-secondary-container/30 rounded-full">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="location_on" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="text-[11px] font-bold text-on-secondary-container">Within Geofence</span>
+</div>
+<button class="bg-gradient-to-r from-primary to-primary-container text-white py-2 px-5 rounded-full font-bold text-sm flex items-center gap-2 active:scale-95 transition-transform shadow-md">
+                            Check In
+                        </button>
+</div>
+</div>
+</div>
+<!-- Stop Item: Pending -->
+<div class="bg-surface-container-low/50 rounded-3xl p-5 flex items-center gap-4 opacity-70">
+<div class="flex flex-col items-center gap-1">
+<div class="w-8 h-8 rounded-full bg-surface-dim flex items-center justify-center text-on-surface-variant font-bold text-sm border-2 border-outline-variant/20">3</div>
+<div class="w-0.5 h-8 bg-outline-variant/20"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-bold text-on-surface">CVS Pharmacy</h4>
+<span class="text-[10px] font-bold bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full uppercase tracking-tighter text-xs">Pending</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-3">429 Fourth Ave, Pittsburgh</p>
+<div class="flex items-center gap-2 text-[10px] text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-xs" data-icon="distance">distance</span>
+                        1.2 miles away
+                    </div>
+</div>
+</div>
+<!-- Map Snippet -->
+<div class="mt-8 rounded-[2rem] overflow-hidden relative h-48 group">
+<img alt="Route Map" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Modern minimalist city map with highlighted blue route path and small circular icons for store stops" data-location="Pittsburgh" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJKS2xptsQMpNHex6gbIKBAm5h9n5qS0vv3i_KFv1Y7TB_Liv4tDyG40gcZa1QBw1c7r9TrYXYcpd786TkaZrTe6vUH7MRBq7EgBrV2c_8WIPfA02IgTgKSkqLEyM6LSCHcHkBDEujj3iCKRFfVYz6LHWr2cONAWsolq0lyZ4OeG40YA_qcSqXntdiL4agfj8CBZonuUjgld-I0Fs5WSwhoE3V731nK1mat--_f6ubMv_g6w0hWKsQ_pSAF0hT8moJJVvfKVuS7ulk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/40 to-transparent"></div>
+<div class="absolute bottom-4 left-6 flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="near_me" style="font-variation-settings: 'FILL' 1;">near_me</span>
+<span class="text-xs font-bold text-on-surface">View Interactive Map</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-[#f3faff]/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 rounded-t-3xl shadow-[0_-4px_16px_rgba(7,30,39,0.06)] border-t border-white/20">
+<!-- Today (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#1A73E8] text-white rounded-2xl px-5 py-2 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-['Inter'] font-medium text-[11px]">Today</span>
+</a>
+<!-- Reports -->
+<a class="flex flex-col items-center justify-center text-[#414754] dark:text-slate-400 px-5 py-2 hover:bg-[#e6f6ff] dark:hover:bg-slate-800 transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Inter'] font-medium text-[11px]">Reports</span>
+</a>
+<!-- Center -->
+<a class="flex flex-col items-center justify-center text-[#414754] dark:text-slate-400 px-5 py-2 hover:bg-[#e6f6ff] dark:hover:bg-slate-800 transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="font-['Inter'] font-medium text-[11px]">Center</span>
+</a>
+</nav>
+<!-- FAB (Suppressed on Route Page as per Shell visibility rules if route is considered "focused task", but typically helpful on Home. Kept hidden to prioritize content canvas as requested for "Focused Journeys") -->
+</body></html>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/report_models.dart';
 import '../providers/report_providers.dart';
 
@@ -31,10 +32,16 @@ class _ReportBuilderPageState extends ConsumerState<ReportBuilderPage> {
     final entities = ref.watch(reportEntitiesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Report Builder')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Report Builder',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: entities.when(
         data: (entityList) => _buildContent(entityList),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error loading entities: $e')),
       ),
     );
@@ -50,8 +57,8 @@ class _ReportBuilderPageState extends ConsumerState<ReportBuilderPage> {
       children: [
         // Configuration panel
         Container(
-          color: Colors.grey.shade50,
-          padding: const EdgeInsets.all(12),
+          color: AppColors.surfaceContainerLow,
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -134,10 +141,26 @@ class _ReportBuilderPageState extends ConsumerState<ReportBuilderPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  FilledButton.icon(
-                    onPressed: () => setState(() => _hasRun = true),
-                    icon: const Icon(Icons.play_arrow, size: 18),
-                    label: const Text('Run Report'),
+                  GestureDetector(
+                    onTap: () => setState(() => _hasRun = true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryContainer],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text('Run Report',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

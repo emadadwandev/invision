@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **2026-04-15**: Resolved all compile errors discovered during `flutter analyze`
+  - **Mass import path fix**: All 49 feature pages had import paths with 5 `../` levels (`../../../../../core/`) corrected to 4 levels (`../../../../core/`) — pages are at `lib/src/features/X/presentation/pages/` which needs 4 levels to reach `lib/src/`
+  - `app_theme.dart`: `CardTheme(` → `CardThemeData(` (type mismatch fix)
+  - `calendar_page.dart`: Removed duplicate `);` at closing of build method
+  - `dashboard_page.dart`: Fixed corrupted record field access `p.\` → `p.$1`/`p.$2`
+  - `report_builder_page.dart`: Removed orphaned `child:` prefix on `GestureDetector(`
+  - `store_inquiry_page.dart`: Removed orphaned duplicate body fragment after scaffold close
+  - `command_center_page.dart`: Restored missing `command_center_providers.dart` import
+  - `field_force_home_page.dart`: Fixed bracket mismatch — `SizedBox` was closed with `],` instead of `),`; restored correct `],` to close `Column.children`
+  - `my_route_page.dart`: Fixed wrong import path for `gps_tracking_providers.dart` (`../../../../` → `../../../gps_tracking/...`)
+- **2026-04-15**: Added Flutter web platform support (`flutter create --platforms=web .`)
+  - App now runs in Chrome (`flutter run -d chrome --web-port 5500`)
+
+### Changed
+- **2026-04-14**: Completed full AppColors/Material3 UI redesign for all 51 screens (UI only, no functional changes)
+  - Redesigned remaining pages: `competitor_detail_page.dart`, `competitor_analysis_page.dart`, `add_observation_page.dart`, `command_center_page.dart`, `user_activity_page.dart`
+  - Fixed `field_force_home_page.dart` — replaced remaining `Colors.red` references with `AppColors.error`
+  - Universal pattern: `Card` → `Container(borderRadius, surfaceContainerLowest)`, `Chip` → pill `Container(borderRadius: 100)`, `FilledButton` → `GestureDetector + Container(gradient: LinearGradient([primary, primaryContainer]))`, all `Colors.*` → `AppColors.*` tokens
+  - All `AppBar`s: `backgroundColor: AppColors.surface.withOpacity(0.9)`, `elevation: 0`, `scrolledUnderElevation: 0`
+  - All `CircularProgressIndicator` → `color: AppColors.primary`
+  - Status color mappings: active/success → `AppColors.secondary`, info/primary → `AppColors.primaryContainer`/`AppColors.primary`, warning → `AppColors.tertiary`, error/inactive → `AppColors.error`, neutral → `AppColors.outline`/`AppColors.onSurfaceVariant`
+  - `command_center_page.dart`: map store marker changed from `Colors.deepPurple` to `AppColors.primary`; GPS trail polyline → `AppColors.primaryContainer`; online/offline status → `AppColors.secondary`/`AppColors.outline`
+
+
 ### Added
 - **2026-04-05**: Role-based home screen routing
   - Field force roles (`field_force`, `sales_representative`, `promoter`, `merchandiser`) are redirected to `/field-force-home` after login instead of the admin dashboard

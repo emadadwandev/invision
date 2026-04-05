@@ -10,6 +10,7 @@ import '../../data/models/field_force_position.dart';
 import '../../data/models/store_map_item.dart';
 import '../../../realtime/presentation/providers/realtime_providers.dart';
 import '../providers/command_center_providers.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class CommandCenterPage extends ConsumerStatefulWidget {
   const CommandCenterPage({super.key});
@@ -63,37 +64,43 @@ class _CommandCenterPageState extends ConsumerState<CommandCenterPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Command Center'),
+        title: Text('Command Center',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
         actions: [
           // WebSocket connection indicator
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: ref.watch(wsConnectionProvider).when(
                   data: (connected) => Icon(
-                    Icons.wifi,
-                    color: connected ? Colors.green : Colors.grey,
+                    Icons.wifi_rounded,
+                    color: connected ? AppColors.secondary : AppColors.outline,
                     size: 18,
                   ),
                   loading: () =>
-                      const Icon(Icons.wifi, color: Colors.grey, size: 18),
+                      const Icon(Icons.wifi_rounded, color: AppColors.outline, size: 18),
                   error: (_, __) =>
-                      const Icon(Icons.wifi_off, color: Colors.red, size: 18),
+                      const Icon(Icons.wifi_off_rounded, color: AppColors.error, size: 18),
                 ),
           ),
           IconButton(
             icon: Icon(
-              _showFieldForce ? Icons.people : Icons.people_outline,
+              _showFieldForce ? Icons.people_rounded : Icons.people_outline,
+              color: AppColors.onSurface,
             ),
             tooltip: 'Toggle Field Force',
             onPressed: () => setState(() => _showFieldForce = !_showFieldForce),
           ),
           IconButton(
-            icon: Icon(_showStores ? Icons.store : Icons.store_outlined),
+            icon: Icon(_showStores ? Icons.store_rounded : Icons.store_outlined,
+                color: AppColors.onSurface),
             tooltip: 'Toggle Stores',
             onPressed: () => setState(() => _showStores = !_showStores),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: AppColors.onSurface),
             tooltip: 'Refresh',
             onPressed: () {
               ref.invalidate(commandCenterStatsProvider);
@@ -110,7 +117,8 @@ class _CommandCenterPageState extends ConsumerState<CommandCenterPage> {
             data: (stats) => _StatsBar(stats: stats),
             loading: () => const SizedBox(
               height: 60,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                  child: CircularProgressIndicator(color: AppColors.primary)),
             ),
             error: (_, __) => const SizedBox.shrink(),
           ),
@@ -207,7 +215,8 @@ class _CommandCenterPageState extends ConsumerState<CommandCenterPage> {
       height: 40,
       child: GestureDetector(
         onTap: () => _showStorePopup(store),
-        child: const Icon(Icons.storefront, color: Colors.deepPurple, size: 32),
+        child: const Icon(Icons.storefront_rounded,
+            color: AppColors.primary, size: 32),
       ),
     );
   }
@@ -222,12 +231,12 @@ class _CommandCenterPageState extends ConsumerState<CommandCenterPage> {
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: user.isOnline ? Colors.green : Colors.grey,
+            color: user.isOnline ? AppColors.secondary : AppColors.outline,
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               if (user.isOnline)
                 BoxShadow(
-                  color: Colors.green.withValues(alpha: 0.4),
+                  color: AppColors.secondary.withOpacity(0.4),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -279,22 +288,22 @@ class _StatsBar extends StatelessWidget {
           _StatChip(
             label: 'Online',
             value: '${stats.onlineCount}/${stats.totalFieldForce}',
-            color: Colors.green,
+            color: AppColors.secondary,
           ),
           _StatChip(
             label: 'Routes',
             value: '${stats.activeRoutes}',
-            color: Colors.blue,
+            color: AppColors.primaryContainer,
           ),
           _StatChip(
             label: 'Stores',
             value: '${stats.totalStores}',
-            color: Colors.purple,
+            color: AppColors.primary,
           ),
           _StatChip(
             label: 'Orders',
             value: '${stats.todayOrders}',
-            color: Colors.orange,
+            color: AppColors.tertiary,
           ),
         ],
       ),
@@ -359,10 +368,9 @@ class _FieldForceList extends StatelessWidget {
         // Handle
         Container(
           margin: const EdgeInsets.only(top: 8),
-          width: 40,
-          height: 4,
+          width: 40, height: 4,
           decoration: BoxDecoration(
-            color: Colors.grey.shade300,
+            color: AppColors.outlineVariant,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -370,7 +378,8 @@ class _FieldForceList extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Text(
             'Field Force (${online.length} online)',
-            style: Theme.of(context).textTheme.titleSmall,
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700),
           ),
         ),
         Expanded(
@@ -382,20 +391,24 @@ class _FieldForceList extends StatelessWidget {
               return ListTile(
                 leading: CircleAvatar(
                   backgroundColor:
-                      user.isOnline ? Colors.green : Colors.grey.shade400,
+                      user.isOnline ? AppColors.secondary : AppColors.outline,
                   child:
                       const Icon(Icons.person, color: Colors.white, size: 20),
                 ),
-                title: Text(user.name),
-                subtitle: Text(user.roleLabel),
+                title: Text(user.name,
+                    style: const TextStyle(color: AppColors.onSurface)),
+                subtitle: Text(user.roleLabel,
+                    style: const TextStyle(color: AppColors.onSurfaceVariant)),
                 trailing: user.isOnline
                     ? Text(
                         '${user.speedKmh?.toStringAsFixed(1) ?? '0'} km/h',
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.onSurface),
                       )
                     : const Text(
                         'Offline',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.outline),
                       ),
                 onTap: () => onTapUser(user),
               );
@@ -430,7 +443,7 @@ class _StoreDetailSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: AppColors.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -438,15 +451,19 @@ class _StoreDetailSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             store.name,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(color: AppColors.onSurface),
           ),
           Text(
             '${store.code} • ${store.category ?? ''} • ${store.rank ?? ''}',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: AppColors.onSurfaceVariant),
           ),
           if (store.address != null) ...[
             const SizedBox(height: 4),
-            Text(store.address!, style: Theme.of(context).textTheme.bodySmall),
+            Text(store.address!,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: AppColors.onSurfaceVariant)),
           ],
           const Divider(height: 24),
           // Sales
@@ -503,7 +520,7 @@ class _UserDetailSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: AppColors.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -513,7 +530,7 @@ class _UserDetailSheet extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor:
-                    user.isOnline ? Colors.green : Colors.grey.shade400,
+                    user.isOnline ? AppColors.secondary : AppColors.outline,
                 radius: 24,
                 child: const Icon(Icons.person, color: Colors.white, size: 28),
               ),
@@ -524,11 +541,13 @@ class _UserDetailSheet extends StatelessWidget {
                   children: [
                     Text(
                       user.name,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(color: AppColors.onSurface),
                     ),
                     Text(
                       user.roleLabel,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: AppColors.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -540,14 +559,16 @@ class _UserDetailSheet extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: user.isOnline
-                      ? Colors.green.shade50
-                      : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
+                      ? AppColors.secondaryContainer
+                      : AppColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(100),
                 ),
                 child: Text(
                   user.isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
-                    color: user.isOnline ? Colors.green : Colors.grey,
+                    color: user.isOnline
+                        ? AppColors.secondary
+                        : AppColors.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
@@ -585,8 +606,11 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(label,
+              style: const TextStyle(color: AppColors.onSurfaceVariant)),
+          Text(value,
+              style: const TextStyle(
+                  fontWeight: FontWeight.w600, color: AppColors.onSurface)),
         ],
       ),
     );

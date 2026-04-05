@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/inquiry_models.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -33,12 +34,18 @@ class _StoreInquiryPageState extends ConsumerState<StoreInquiryPage> {
     final stores = ref.watch(storeInquiryProvider(_filter));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Store Inquiry')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Store Inquiry',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: Column(
         children: [
-          // Filters
           Container(
-            color: Colors.grey.shade50,
+            color: AppColors.surfaceContainerLow,
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
@@ -46,10 +53,13 @@ class _StoreInquiryPageState extends ConsumerState<StoreInquiryPage> {
                   controller: _searchCtrl,
                   decoration: InputDecoration(
                     hintText: 'Search by name or code...',
-                    prefixIcon: const Icon(Icons.search, size: 20),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20,
+                        color: AppColors.outline),
                     isDense: true,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                   ),
                   onSubmitted: (_) => setState(() {}),
                 ),
@@ -60,7 +70,8 @@ class _StoreInquiryPageState extends ConsumerState<StoreInquiryPage> {
                       child: DropdownButtonFormField<String>(
                         key: ValueKey(_category),
                         initialValue: _category,
-                        decoration: const InputDecoration(labelText: 'Category', isDense: true, border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'Category', isDense: true),
                         items: const [
                           DropdownMenuItem(value: null, child: Text('All')),
                           DropdownMenuItem(value: 'grocery', child: Text('Grocery')),
@@ -76,7 +87,8 @@ class _StoreInquiryPageState extends ConsumerState<StoreInquiryPage> {
                       child: DropdownButtonFormField<String>(
                         key: ValueKey(_rank),
                         initialValue: _rank,
-                        decoration: const InputDecoration(labelText: 'Rank', isDense: true, border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                            labelText: 'Rank', isDense: true),
                         items: const [
                           DropdownMenuItem(value: null, child: Text('All')),
                           DropdownMenuItem(value: 'gold', child: Text('Gold')),
@@ -91,11 +103,11 @@ class _StoreInquiryPageState extends ConsumerState<StoreInquiryPage> {
               ],
             ),
           ),
-          // Results
           Expanded(
             child: stores.when(
               data: (list) => _StoreList(stores: list),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary)),
               error: (e, _) => Center(child: Text('Error: $e')),
             ),
           ),
@@ -120,37 +132,50 @@ class _StoreList extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (_, i) {
         final s = stores[i];
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(s.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                    ),
-                    Text(s.code, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontFamily: 'monospace')),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                if (s.area != null || s.category != null)
-                  Text([s.category, s.rank, s.area].whereType<String>().join(' · '),
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                const Divider(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _Metric(label: 'Orders', value: '${s.orderCount}'),
-                    _Metric(label: 'Sales', value: _currency.format(s.totalSales)),
-                    _Metric(label: 'Stock', value: '${s.stockQuantity}'),
-                    if (s.creditBalance != null)
-                      _Metric(label: 'Credit Bal', value: _currency.format(s.creditBalance)),
-                  ],
-                ),
-              ],
-            ),
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(s.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.onSurface, fontSize: 14)),
+                  ),
+                  Text(s.code,
+                      style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.outline,
+                          fontFamily: 'monospace')),
+                ],
+              ),
+              const SizedBox(height: 4),
+              if (s.area != null || s.category != null)
+                Text([s.category, s.rank, s.area].whereType<String>().join(' · '),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.onSurfaceVariant)),
+              const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(color: AppColors.outlineVariant, height: 1)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _Metric(label: 'Orders', value: '${s.orderCount}'),
+                  _Metric(label: 'Sales', value: _currency.format(s.totalSales)),
+                  _Metric(label: 'Stock', value: '${s.stockQuantity}'),
+                  if (s.creditBalance != null)
+                    _Metric(label: 'Credit Bal',
+                        value: _currency.format(s.creditBalance)),
+                ],
+              ),
+            ],
           ),
         );
       },
@@ -167,9 +192,12 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+        Text(label,
+            style: const TextStyle(fontSize: 10, color: AppColors.outline)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.onSurface)),
       ],
     );
   }

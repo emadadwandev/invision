@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Field Force Home</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#001a41",
+                        "secondary": "#1b6d24",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#004493",
+                        "primary-container": "#1a73e8",
+                        "on-secondary-container": "#217128",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#cfe6f2",
+                        "surface-container-high": "#d5ecf8",
+                        "tertiary-container": "#d14900",
+                        "outline": "#727785",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#802a00",
+                        "on-tertiary-fixed": "#380d00",
+                        "surface-container-low": "#e6f6ff",
+                        "tertiary": "#a83900",
+                        "on-secondary-fixed-variant": "#005312",
+                        "inverse-surface": "#1e333c",
+                        "inverse-primary": "#adc7ff",
+                        "outline-variant": "#c1c6d6",
+                        "tertiary-fixed-dim": "#ffb59a",
+                        "inverse-on-surface": "#dff4ff",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#005bc0",
+                        "secondary-fixed": "#a3f69c",
+                        "background": "#f3faff",
+                        "on-primary-container": "#ffffff",
+                        "surface-bright": "#f3faff",
+                        "surface-container": "#dbf1fe",
+                        "surface": "#f3faff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-background": "#071e27",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#a0f399",
+                        "primary": "#005bbf",
+                        "surface-container-highest": "#cfe6f2",
+                        "on-surface": "#071e27",
+                        "on-surface-variant": "#414754",
+                        "secondary-fixed-dim": "#88d982",
+                        "tertiary-fixed": "#ffdbcf",
+                        "on-tertiary-container": "#ffffff",
+                        "on-secondary-fixed": "#002204",
+                        "surface-dim": "#c7dde9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3faff;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl docked full-width top-0 sticky z-50">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="User Profile Picture" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional man in high-visibility field gear smiling in an outdoor urban setting with soft morning light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCo9Xjs09qp2qM4duDGYH7Abde2Bj30eNvbPW_e7Xw2DcNuAE4mXCbMgSUmYtb2OBGSL8IWlDvSnk5urTKVp7ZSQAgEbf_FT2bv3yvlRMY5wTfCUIxjA2LBG0WGhX-cIQK_mgAlqo3O15_2k2SR4gz9AdMaPcNbv0cNeWlCxB7kDDFBuB9g1w1LL7tzQXn5_7CI-xO0TgupTzAleR5HtjgBmk-bIimJvYtZdpPXidbrhs-rnVsgSVQxRSTUthrgFYD0jnOWFre_UBIf"/>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant font-medium">Good Morning,</p>
+<h1 class="text-xl font-bold text-on-surface leading-tight">Alex Sterling</h1>
+</div>
+</div>
+<button class="relative p-2 rounded-full hover:bg-surface-container-highest/20 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+</header>
+<main class="px-6 py-4 max-w-screen-2xl mx-auto space-y-6">
+<!-- Duty Tracking Section -->
+<section class="bg-surface-container-low p-6 rounded-xl space-y-4">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-outline-variant animate-pulse"></span>
+<span class="text-sm font-semibold text-on-surface-variant">Currently Off-Duty</span>
+</div>
+<span class="text-label-sm font-medium text-on-surface-variant">Last shift: Yesterday 18:42</span>
+</div>
+<div class="bg-surface-container-lowest p-1 rounded-xl flex gap-1">
+<button class="flex-1 py-3 px-4 rounded-lg bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold shadow-lg flex items-center justify-center gap-2 active:scale-95 duration-150 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    Start Duty
+                </button>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl">
+<p class="text-label-sm text-on-surface-variant font-bold">TODAY'S TARGET</p>
+<p class="text-3xl font-extrabold text-primary">12</p>
+<p class="text-xs text-on-surface-variant">Total Stops</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl">
+<p class="text-label-sm text-on-surface-variant font-bold">COMPLETED</p>
+<p class="text-3xl font-extrabold text-secondary">02</p>
+<p class="text-xs text-on-surface-variant">Stores Visited</p>
+</div>
+</div>
+<!-- Today's Route Section -->
+<section class="space-y-4">
+<div class="flex items-end justify-between px-1">
+<h2 class="text-xl font-extrabold text-on-surface">Today's Route</h2>
+<span class="text-sm font-bold text-primary">16.4 KM Total</span>
+</div>
+<!-- Progress Bar -->
+<div class="bg-surface-container-low p-4 rounded-xl space-y-2">
+<div class="flex justify-between text-xs font-bold text-on-surface-variant">
+<span>PROGRESS</span>
+<span>2 / 12 STORES</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 16.6%"></div>
+</div>
+</div>
+<!-- Store List -->
+<div class="space-y-4">
+<!-- Stop 1: Completed -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-4 transition-all hover:bg-surface-container-lowest/80">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface leading-tight">FreshMart Central</h3>
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Completed</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">452 Market St, Suite 10</p>
+</div>
+</div>
+<!-- Stop 2: Checked In -->
+<div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-4 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-container">location_on</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface leading-tight">QuickStop Express</h3>
+<span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold uppercase">Checked In</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">Checking inventory • 14 mins elapsed</p>
+<div class="mt-3">
+<button class="w-full py-2 bg-surface-container-high text-primary font-bold text-sm rounded-lg hover:bg-surface-container-highest/50">
+                                View Checklist
+                            </button>
+</div>
+</div>
+</div>
+<!-- Stop 3: Pending -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 opacity-75 grayscale-[0.5]">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-outline">storefront</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface leading-tight">Zenith Grocers</h3>
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase">Pending</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">0.8 KM from current location</p>
+</div>
+</div>
+<!-- Stop 4: Pending -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center gap-4 opacity-75 grayscale-[0.5]">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-outline">storefront</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface leading-tight">Harbor View Foods</h3>
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase">Pending</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-1">2.4 KM from current location</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Map Preview Placeholder -->
+<section class="px-6 pb-28">
+<div class="relative w-full h-48 rounded-2xl overflow-hidden shadow-sm group">
+<img alt="Route Map" class="w-full h-full object-cover" data-alt="A clean, minimalist digital map view with a highlighted blue path connecting multiple store locations in a metropolitan area." data-location="New York" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNhYi1YenjMF2CvKmfp6hanGZ7aKiY8gOzPFVLspN7KHh_2bDt1_6u9mx8aanIo22hPg-gzv_5_qvm9MsE-ohUYlAbYSTSDN2Ug3ZrZgc-Vbf1KCPiV3KCoSx3xGEnrqk-eh2W-6MPNcqGbSIB96LJgPVc6HgfRZDXFchT1GuvCAhs8v89su3w-208Sq_fQ96yuzFOTCLnb3EgkOPFQbJ9ydGy3hQhk39LGAHVgaGo1f-QzF5twLct3MhthgomMydB7ky7VZfgpEfJ"/>
+<div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<button class="w-full py-3 bg-surface-container-lowest/90 backdrop-blur-md text-on-surface font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-primary">directions</span>
+                    Expand Route Map
+                </button>
+</div>
+</div>
+</section>
+<!-- FAB: Contextual to Home/Today -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-2xl shadow-xl flex items-center justify-center z-50 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-4 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl rounded-t-xl shadow-lg">
+<!-- Today (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary/20 text-on-primary-container dark:text-primary-container rounded-2xl p-2 active:scale-95 duration-150 transition-transform mt-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="text-[10px] font-bold mt-1">Today</span>
+</a>
+<!-- Notifications (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-500 p-2 hover:bg-surface-container-highest/30 transition-transform active:scale-95 mt-2" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="text-[10px] font-bold mt-1">Notifications</span>
+</a>
+<!-- Profile (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-slate-500 p-2 hover:bg-surface-container-highest/30 transition-transform active:scale-95 mt-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

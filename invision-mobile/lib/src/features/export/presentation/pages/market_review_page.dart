@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/export_models.dart';
 import '../providers/export_providers.dart';
 
@@ -19,11 +20,15 @@ class _MarketReviewPageState extends ConsumerState<MarketReviewPage> {
     final presentationAsync = ref.watch(marketReviewProvider(_period));
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Market Review'),
+        title: Text('Market Review',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.tune),
+            icon: const Icon(Icons.tune_rounded, size: 20, color: AppColors.primary),
             onSelected: (value) => setState(() => _period = value),
             itemBuilder: (_) => [
               const PopupMenuItem(value: 'week', child: Text('This Week')),
@@ -35,7 +40,7 @@ class _MarketReviewPageState extends ConsumerState<MarketReviewPage> {
         ],
       ),
       body: presentationAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (presentation) => _PresentationViewer(presentation: presentation),
       ),
@@ -122,8 +127,8 @@ class _PresentationViewerState extends State<_PresentationViewer> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: i == _currentSlide
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.shade300,
+                          ? AppColors.primary
+                          : AppColors.outlineVariant,
                     ),
                   ),
                 ),
@@ -153,8 +158,18 @@ class _SlideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.06),
+            blurRadius: 8, offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -163,19 +178,17 @@ class _SlideCard extends StatelessWidget {
             Text(
               slide.title,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                    fontWeight: FontWeight.bold, color: AppColors.onSurface),
             ),
-            const Divider(height: 24),
+            const Divider(height: 24, color: AppColors.outlineVariant),
             Expanded(child: _buildContent(context)),
             if (slide.notes.isNotEmpty) ...[
-              const Divider(height: 24),
+              const Divider(height: 24, color: AppColors.outlineVariant),
               Text(
                 slide.notes,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontStyle: FontStyle.italic,
-                      color: Colors.grey,
-                    ),
+                      color: AppColors.onSurfaceVariant),
               ),
             ],
           ],
@@ -215,7 +228,7 @@ class _SlideCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               content['date'],
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
             ),
           ],
         ],

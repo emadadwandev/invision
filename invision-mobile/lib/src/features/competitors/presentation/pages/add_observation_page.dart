@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../providers/competitor_providers.dart';
 
 class AddObservationPage extends ConsumerStatefulWidget {
@@ -67,7 +68,7 @@ class _AddObservationPageState extends ConsumerState<AddObservationPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Observation recorded successfully'),
-              backgroundColor: Colors.green),
+              backgroundColor: AppColors.secondary),
         );
         context.pop();
       }
@@ -75,7 +76,8 @@ class _AddObservationPageState extends ConsumerState<AddObservationPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Error: $e'), backgroundColor: Colors.red),
+              content: Text('Error: $e'),
+              backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -96,7 +98,14 @@ class _AddObservationPageState extends ConsumerState<AddObservationPage> {
     final competitorsAsync = ref.watch(competitorsProvider(null));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Record Observation')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Record Observation',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -111,24 +120,36 @@ class _AddObservationPageState extends ConsumerState<AddObservationPage> {
               runSpacing: 8,
               children: _observationTypes.map((type) {
                 final isSelected = _observationType == type.$1;
-                return ChoiceChip(
-                  selected: isSelected,
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(type.$3,
-                          size: 16,
-                          color:
-                              isSelected ? Colors.white : Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(type.$2),
-                    ],
+                return GestureDetector(
+                  onTap: () => setState(() => _observationType = type.$1),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(type.$3,
+                            size: 15,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(type.$2,
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.onSurfaceVariant)),
+                      ],
+                    ),
                   ),
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() => _observationType = type.$1);
-                    }
-                  },
                 );
               }).toList(),
             ),
@@ -248,19 +269,44 @@ class _AddObservationPageState extends ConsumerState<AddObservationPage> {
             const SizedBox(height: 24),
 
             // Submit
-            FilledButton.icon(
-              onPressed: _isSubmitting ? null : _submit,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.save),
-              label: Text(_isSubmitting ? 'Saving...' : 'Record Observation'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
+            GestureDetector(
+              onTap: _isSubmitting ? null : _submit,
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: _isSubmitting
+                      ? null
+                      : const LinearGradient(
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primaryContainer
+                          ],
+                        ),
+                  color: _isSubmitting ? AppColors.outlineVariant : null,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isSubmitting)
+                      const SizedBox(
+                        width: 18, height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    else
+                      const Icon(Icons.save_rounded,
+                          color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isSubmitting ? 'Saving...' : 'Record Observation',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

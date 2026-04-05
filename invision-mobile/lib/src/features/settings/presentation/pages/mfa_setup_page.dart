@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/repositories/mfa_repository.dart';
 import '../providers/mfa_providers.dart';
 
@@ -132,9 +133,15 @@ class _MfaSetupPageState extends ConsumerState<MfaSetupPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Two-Factor Authentication')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Two-Factor Authentication',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: statusAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (status) => SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -145,58 +152,78 @@ class _MfaSetupPageState extends ConsumerState<MfaSetupPage> {
               _StatusCard(status: status),
               const SizedBox(height: 16),
 
-              if (_error != null) ...[
+              if (_error != null) ...[const SizedBox(height: 2),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.errorContainer,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(_error!,
-                      style: TextStyle(color: Colors.red.shade700)),
+                      style: const TextStyle(color: AppColors.error)),
                 ),
-                const SizedBox(height: 16),
-              ],
+                const SizedBox(height: 14)],
 
               // Enable flow
-              if (!status.enabled && _enableResult == null) ...[
+              if (!status.enabled && _enableResult == null) ...[const SizedBox(height: 8),
                 Text('Protect your account',
-                    style: theme.textTheme.titleMedium),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 const Text(
                   'Add an extra layer of security by enabling two-factor '
                   'authentication. You\'ll need an authenticator app like '
                   'Google Authenticator or Authy.',
+                  style: TextStyle(color: AppColors.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: _loading ? null : _enableMfa,
-                  icon: _loading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.security),
-                  label: const Text('Enable MFA'),
-                ),
-              ],
+                GestureDetector(
+                  onTap: _loading ? null : _enableMfa,
+                  child: Container(
+                    width: double.infinity, height: 50,
+                    decoration: BoxDecoration(
+                      gradient: _loading
+                          ? null
+                          : const LinearGradient(
+                              colors: [AppColors.primary, AppColors.primaryContainer],
+                            ),
+                      color: _loading ? AppColors.surfaceContainerHigh : null,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: _loading
+                        ? const SizedBox(width: 18, height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                        : const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.security_rounded, color: Colors.white, size: 18),
+                              SizedBox(width: 6),
+                              Text('Enable MFA',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                            ],
+                          ),
+                  ),
+                )],
 
               // Setup confirmation step
-              if (_enableResult != null) ...[
-                Text('Scan this secret', style: theme.textTheme.titleMedium),
+              if (_enableResult != null) ...[const SizedBox(height: 4),
+                Text('Scan this secret',
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 const Text(
                   'Add this secret key to your authenticator app, then '
                   'enter the 6-digit code below to confirm.',
+                  style: TextStyle(color: AppColors.onSurfaceVariant),
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade300),
+                    color: AppColors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.outlineVariant),
                   ),
                   child: Row(
                     children: [
@@ -238,36 +265,48 @@ class _MfaSetupPageState extends ConsumerState<MfaSetupPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _loading ? null : _confirmMfa,
-                  child: _loading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Confirm & Enable'),
+                GestureDetector(
+                  onTap: _loading ? null : _confirmMfa,
+                  child: Container(
+                    width: double.infinity, height: 50,
+                    decoration: BoxDecoration(
+                      gradient: _loading
+                          ? null
+                          : const LinearGradient(
+                              colors: [AppColors.primary, AppColors.primaryContainer],
+                            ),
+                      color: _loading ? AppColors.surfaceContainerHigh : null,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: _loading
+                        ? const SizedBox(width: 18, height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Confirm & Enable',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                  ),
                 ),
               ],
 
               // Recovery codes
-              if (_recoveryCodes != null) ...[
-                const SizedBox(height: 24),
-                Text('Recovery Codes', style: theme.textTheme.titleMedium),
+              if (_recoveryCodes != null) ...[const SizedBox(height: 20),
+                Text('Recovery Codes',
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 const Text(
                   'Save these codes in a secure place. Each code can only '
                   'be used once to sign in if you lose access to your '
                   'authenticator app.',
+                  style: TextStyle(color: AppColors.onSurfaceVariant),
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.shade300),
+                    color: const Color(0xFFFFF9C4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFFE082)),
                   ),
                   child: Column(
                     children: [
@@ -301,58 +340,87 @@ class _MfaSetupPageState extends ConsumerState<MfaSetupPage> {
               ],
 
               // MFA is enabled — show management options
-              if (status.enabled && status.confirmed) ...[
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text('Manage MFA',
-                            style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Recovery codes remaining: '
-                          '${status.recoveryCodesRemaining}',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _loading ? null : _regenerateCodes,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Regenerate Recovery Codes'),
-                        ),
-                        const Divider(height: 24),
-                        Text('Disable MFA',
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(color: Colors.red)),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Current Password',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.lock),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: _loading ? null : _disableMfa,
-                          icon: const Icon(Icons.shield_outlined,
-                              color: Colors.red),
-                          label: const Text('Disable MFA',
-                              style: TextStyle(color: Colors.red)),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.red),
-                          ),
-                        ),
-                      ],
-                    ),
+              if (status.enabled && status.confirmed) ...[const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.outlineVariant.withOpacity(0.5)),
                   ),
-                ),
-              ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('Manage MFA',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Recovery codes remaining: '
+                        '${status.recoveryCodesRemaining}',
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.onSurface),
+                      ),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: _loading ? null : _regenerateCodes,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.outlineVariant),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.refresh_rounded, size: 16, color: AppColors.primary),
+                              SizedBox(width: 6),
+                              Text('Regenerate Recovery Codes',
+                                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Padding(padding: EdgeInsets.symmetric(vertical: 14),
+                          child: Divider(color: AppColors.outlineVariant, height: 1)),
+                      Text('Disable MFA',
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(color: AppColors.error, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Current Password',
+                          prefixIcon: Icon(Icons.lock_rounded, size: 18, color: AppColors.outline),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: _loading ? null : _disableMfa,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.errorContainer,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.shield_outlined, color: AppColors.error, size: 16),
+                              SizedBox(width: 6),
+                              Text('Disable MFA',
+                                  style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )],
             ],
           ),
         ),
@@ -368,41 +436,50 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = status.enabled && status.confirmed;
-    return Card(
-      color: enabled ? Colors.green.shade50 : Colors.grey.shade100,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              enabled ? Icons.verified_user : Icons.shield_outlined,
-              color: enabled ? Colors.green : Colors.grey,
-              size: 40,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: enabled ? AppColors.secondaryContainer : AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(
+              color: enabled ? AppColors.secondary.withOpacity(0.15) : AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    enabled ? 'MFA Enabled' : 'MFA Disabled',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: enabled ? Colors.green.shade700 : Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    enabled
-                        ? 'Your account is protected with two-factor authentication.'
-                        : 'Enable MFA to add an extra layer of security.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
+            child: Icon(
+              enabled ? Icons.verified_user_rounded : Icons.shield_outlined,
+              color: enabled ? AppColors.secondary : AppColors.outline,
+              size: 26,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  enabled ? 'MFA Enabled' : 'MFA Disabled',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: enabled ? AppColors.onSecondaryContainer : AppColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  enabled
+                      ? 'Your account is protected with two-factor authentication.'
+                      : 'Enable MFA to add an extra layer of security.',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: AppColors.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/calendar_models.dart';
 import '../providers/calendar_providers.dart';
 
@@ -13,14 +14,24 @@ class SalesAreaListPage extends ConsumerWidget {
     final areasAsync = ref.watch(salesAreasHierarchyProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sales Areas')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text('Sales Areas',
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
+      ),
       body: areasAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (areas) => areas.isEmpty
-            ? const Center(child: Text('No sales areas defined'))
+            ? const Center(
+                child: Text('No sales areas defined',
+                    style: TextStyle(color: AppColors.onSurfaceVariant)))
             : ListView.builder(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 itemCount: areas.length,
                 itemBuilder: (context, i) =>
                     _SalesAreaCard(area: areas[i], depth: 0),
@@ -41,43 +52,72 @@ class _SalesAreaCard extends StatelessWidget {
       padding: EdgeInsets.only(left: depth * 16.0),
       child: Column(
         children: [
-          Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: area.isActive
-                    ? Colors.blue.shade50
-                    : Colors.grey.shade200,
-                child: Icon(
-                  depth == 0 ? Icons.map : Icons.subdirectory_arrow_right,
-                  color:
-                      area.isActive ? Colors.blue.shade700 : Colors.grey,
-                  size: 20,
-                ),
+          GestureDetector(
+            onTap: () => context.push('/sales-areas/${area.id}'),
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(14),
+                border: Border(left: BorderSide(
+                  color: area.isActive ? AppColors.primary : AppColors.outline,
+                  width: 3,
+                )),
               ),
-              title: Text(
-                area.name,
-                style: TextStyle(
-                  fontWeight: depth == 0 ? FontWeight.bold : FontWeight.w500,
-                ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  if (area.managerName != null)
-                    Text('Manager: ${area.managerName}'),
-                  if (area.storeCount > 0)
-                    Text('${area.storeCount} store(s)'),
+                  Container(
+                    width: 36, height: 36,
+                    decoration: BoxDecoration(
+                      color: area.isActive
+                          ? AppColors.primary.withOpacity(0.1)
+                          : AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      depth == 0 ? Icons.map_rounded : Icons.subdirectory_arrow_right_rounded,
+                      color: area.isActive ? AppColors.primary : AppColors.outline,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          area.name,
+                          style: TextStyle(
+                            fontWeight: depth == 0
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        if (area.managerName != null)
+                          Text('${area.managerName}',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.onSurfaceVariant)),
+                        if (area.storeCount > 0)
+                          Text('${area.storeCount} store(s)',
+                              style: const TextStyle(
+                                  fontSize: 12, color: AppColors.outline)),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    area.isActive
+                        ? Icons.check_circle_rounded
+                        : Icons.cancel_rounded,
+                    color: area.isActive ? AppColors.secondary : AppColors.error,
+                    size: 18,
+                  ),
                 ],
               ),
-              trailing: area.isActive
-                  ? const Icon(Icons.check_circle,
-                      color: Colors.green, size: 18)
-                  : const Icon(Icons.cancel, color: Colors.red, size: 18),
-              onTap: () => context.push('/sales-areas/${area.id}'),
             ),
           ),
-          // Render children recursively
           ...area.children.map(
             (child) => _SalesAreaCard(area: child, depth: depth + 1),
           ),

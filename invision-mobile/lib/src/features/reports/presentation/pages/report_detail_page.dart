@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../data/models/report_models.dart';
 import '../providers/report_providers.dart';
 
@@ -37,11 +38,15 @@ class _ReportDetailPageState extends ConsumerState<ReportDetailPage> {
     final report = ref.watch(fixedReportProvider(_filter));
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_title),
+        title: Text(_title,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        backgroundColor: AppColors.surface.withOpacity(0.9),
+        elevation: 0, scrolledUnderElevation: 0,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.download, size: 20),
+            icon: const Icon(Icons.download_rounded, size: 20, color: AppColors.primary),
             onSelected: _handleExport,
             itemBuilder: (_) => const [
               PopupMenuItem(value: 'excel', child: Text('Export Excel')),
@@ -54,7 +59,7 @@ class _ReportDetailPageState extends ConsumerState<ReportDetailPage> {
         children: [
           // Date filter bar
           Container(
-            color: Colors.grey.shade50,
+            color: AppColors.surfaceContainerLow,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
@@ -66,9 +71,9 @@ class _ReportDetailPageState extends ConsumerState<ReportDetailPage> {
                     onTap: () => _pickDate(true),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Text('–', style: TextStyle(color: Colors.grey)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('–', style: TextStyle(color: AppColors.outline)),
                 ),
                 Expanded(
                   child: _DateChip(
@@ -79,20 +84,23 @@ class _ReportDetailPageState extends ConsumerState<ReportDetailPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.tonal(
-                  onPressed: () => setState(() {}),
-                  child: const Text('Apply'),
-                ),
-                if (_dateFrom != null || _dateTo != null) ...[
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.clear, size: 18),
-                    onPressed: () => setState(() {
-                      _dateFrom = null;
-                      _dateTo = null;
-                    }),
+                GestureDetector(
+                  onTap: () => setState(() {}),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text('Apply',
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
                   ),
-                ],
+                ),
+                if (_dateFrom != null || _dateTo != null) ...[const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () => setState(() { _dateFrom = null; _dateTo = null; }),
+                    child: const Icon(Icons.close_rounded, size: 18, color: AppColors.outline),
+                  )],
               ],
             ),
           ),
@@ -149,20 +157,20 @@ class _DateChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
-            const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontSize: 13)),
-          ],
-        ),
-      ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.outlineVariant),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.outline),
+                    const SizedBox(width: 6),
+                    Text(label, style: const TextStyle(fontSize: 13, color: AppColors.onSurface)),
+                  ],
+                ),
+              ),
     );
   }
 }
@@ -178,9 +186,16 @@ class _ReportTable extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.table_chart_outlined, size: 48, color: Colors.grey.shade300),
-            const SizedBox(height: 8),
-            Text('No data found', style: TextStyle(color: Colors.grey.shade500)),
+            Container(
+              width: 64, height: 64,
+              decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(16)),
+              child: const Icon(Icons.table_chart_outlined, size: 32, color: AppColors.outline),
+            ),
+            const SizedBox(height: 10),
+            const Text('No data found',
+                style: TextStyle(color: AppColors.onSurfaceVariant)),
           ],
         ),
       );
