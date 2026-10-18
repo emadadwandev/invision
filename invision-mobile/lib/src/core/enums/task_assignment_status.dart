@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 enum TaskAssignmentStatus {
   pending,
@@ -35,10 +36,10 @@ enum TaskAssignmentStatus {
   };
 
   Color get color => switch (this) {
-    TaskAssignmentStatus.pending => Colors.orange,
-    TaskAssignmentStatus.inProgress => Colors.blue,
-    TaskAssignmentStatus.completed => Colors.green,
-    TaskAssignmentStatus.verified => Colors.indigo,
-    TaskAssignmentStatus.rejected => Colors.red,
+    TaskAssignmentStatus.pending => AppColors.outline,
+    TaskAssignmentStatus.inProgress => AppColors.tertiary,
+    TaskAssignmentStatus.completed => AppColors.secondary,
+    TaskAssignmentStatus.verified => AppColors.primary,
+    TaskAssignmentStatus.rejected => AppColors.error,
   };
 }

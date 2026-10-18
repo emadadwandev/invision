@@ -122,6 +122,45 @@ class _VisitCapturePageState extends ConsumerState<VisitCapturePage> {
     }
   }
 
+  Future<void> _changeCompetitor(int? competitorId) async {
+    if (_competitorId == competitorId) return;
+    final hasCompetitorData = _metrics.values.any((values) =>
+        (int.tryParse(values.competitorSellOut.text) ?? 0) > 0 ||
+        (int.tryParse(values.competitorShelf.text) ?? 0) > 0 ||
+        (int.tryParse(values.competitorWarehouse.text) ?? 0) > 0 ||
+        (int.tryParse(values.competitorSellThrough.text) ?? 0) > 0 ||
+        values.competitorPosmPresent ||
+        values.competitorFrontShopPresent);
+    if (hasCompetitorData) {
+      final clearData = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Change competitor?'),
+          content: const Text(
+            'Changing the competitor will clear the competitor quantities and visibility recorded for this visit.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Keep current'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Clear and change'),
+            ),
+          ],
+        ),
+      );
+      if (clearData != true || !mounted) return;
+    }
+    setState(() {
+      _competitorId = competitorId;
+      for (final controllers in _metrics.values) {
+        controllers.clearCompetitorValues();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final captureAsync = ref.watch(visitCaptureProvider(widget.visitId));
@@ -192,7 +231,10 @@ class _VisitCapturePageState extends ConsumerState<VisitCapturePage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int?>(
-                initialValue: _competitorId,
+                initialValue:
+                    competitors.any((item) => item.id == _competitorId)
+                    ? _competitorId
+                    : null,
                 decoration: const InputDecoration(
                   labelText: 'Competitor to compare',
                   border: OutlineInputBorder(),
@@ -212,17 +254,7 @@ class _VisitCapturePageState extends ConsumerState<VisitCapturePage> {
                     ),
                   ),
                 ],
-                onChanged: _saving
-                    ? null
-                    : (value) {
-                        if (_competitorId == value) return;
-                        setState(() {
-                          _competitorId = value;
-                          for (final controllers in _metrics.values) {
-                            controllers.clearCompetitorValues();
-                          }
-                        });
-                      },
+                onChanged: _saving ? null : _changeCompetitor,
               ),
               const SizedBox(height: 14),
               Autocomplete<Product>(
@@ -267,10 +299,22 @@ class _VisitCapturePageState extends ConsumerState<VisitCapturePage> {
                 ),
               ),
               const SizedBox(height: 12),
+              if (selectedProducts.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    '${selectedProducts.length} ${selectedProducts.length == 1 ? 'product' : 'products'} in this visit',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               if (selectedProducts.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('Search and add the products observed in this store.'),
+                  child: Text(
+                    'Search and add at least one product observed in this store to save visit data.',
+                  ),
                 ),
               ...selectedProducts.map((product) => _productCard(product)),
               const SizedBox(height: 16),
@@ -399,12 +443,28 @@ class _VisitCapturePageState extends ConsumerState<VisitCapturePage> {
               ],
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: _saving ? null : () => _choosePlannedDate(values),
-              icon: const Icon(Icons.calendar_month_outlined),
-              label: Text(values.plannedSellThroughDate == null
-                  ? 'Choose planned date'
-                  : 'Planned: ${values.plannedSellThroughDate}'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _saving ? null : () => _choosePlannedDate(values),
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    label: Text(values.plannedSellThroughDate == null
+                        ? 'Choose planned date'
+                        : 'Planned: ${values.plannedSellThroughDate}'),
+                  ),
+                ),
+                if (values.plannedSellThroughDate != null)
+                  IconButton(
+                    tooltip: 'Clear planned date',
+                    onPressed: _saving
+                        ? null
+                        : () => setState(
+                            () => values.plannedSellThroughDate = null,
+                          ),
+                    icon: const Icon(Icons.close),
+                  ),
+              ],
             ),
             TextField(
               controller: values.plannedSellThroughNotes,
@@ -567,6 +627,8 @@ class _MetricControllers {
     competitorShelf.text = '0';
     competitorWarehouse.text = '0';
     competitorSellThrough.text = '0';
+    competitorPosmPresent = false;
+    competitorFrontShopPresent = false;
   }
 
   void dispose() {

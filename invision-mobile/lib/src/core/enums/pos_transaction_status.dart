@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 enum PosTransactionStatus {
   pending,
@@ -31,9 +32,9 @@ enum PosTransactionStatus {
   };
 
   Color get color => switch (this) {
-    PosTransactionStatus.pending => Colors.orange,
-    PosTransactionStatus.completed => Colors.green,
-    PosTransactionStatus.voided => Colors.red,
-    PosTransactionStatus.synced => Colors.blue,
+    PosTransactionStatus.pending => AppColors.tertiary,
+    PosTransactionStatus.completed => AppColors.secondary,
+    PosTransactionStatus.voided => AppColors.error,
+    PosTransactionStatus.synced => AppColors.primary,
   };
 }

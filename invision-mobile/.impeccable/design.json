@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T15:17:45Z",
+  "title": "Design System: Invision Fieldwork",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Evergreen",
+        "tonalRamp": ["#102824", "#173B34", "#245247", "#326B5A", "#5B8D7B", "#8FB5A4", "#C5D9CE", "#F0F5F1"]
+      },
+      "primary-container": {
+        "role": "primary",
+        "displayName": "Field Green",
+        "tonalRamp": ["#102824", "#173B34", "#245247", "#326B5A", "#5B8D7B", "#8FB5A4", "#C5D9CE", "#F0F5F1"]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Leaf",
+        "tonalRamp": ["#143625", "#20523A", "#286C4A", "#4B8767", "#74A58A", "#9FC2AC", "#C9DFD0", "#F0F7F2"]
+      },
+      "tertiary": {
+        "role": "tertiary",
+        "displayName": "Kiln Orange",
+        "tonalRamp": ["#4A2115", "#793C26", "#9D4C30", "#B95732", "#CC7957", "#DFA58D", "#EED0C2", "#FAF1EC"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "tonalRamp": ["#252722", "#44463F", "#62645C", "#85877E", "#A6A79F", "#C3C3BB", "#DCDAD1", "#F3F0E8"]
+      },
+      "neutral-surface": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "tonalRamp": ["#252722", "#44463F", "#62645C", "#85877E", "#A6A79F", "#C3C3BB", "#E2E0D8", "#FBFAF6"]
+      },
+      "neutral-text": {
+        "role": "neutral",
+        "displayName": "Ink Green",
+        "tonalRamp": ["#0C1715", "#172F2B", "#2E4641", "#4C625D", "#70817D", "#98A5A0", "#C4CCC7", "#F1F3F1"]
+      },
+      "neutral-muted": {
+        "role": "neutral",
+        "displayName": "Soft Slate",
+        "tonalRamp": ["#1F2724", "#3B4541", "#59615D", "#747C78", "#929995", "#AFB4B0", "#CDD0CC", "#F1F2EF"]
+      },
+      "neutral-outline": {
+        "role": "neutral",
+        "displayName": "Stone Line",
+        "tonalRamp": ["#292A26", "#484A45", "#696B65", "#858781", "#A3A49D", "#C8C9C0", "#DEDED7", "#F5F5F2"]
+      }
+    },
+    "typographyMeta": {
+      "display": {"displayName": "Display", "purpose": "The Today page title."},
+      "headline": {"displayName": "Headline", "purpose": "Route headings and store names."},
+      "body": {"displayName": "Body", "purpose": "Supporting information and locations."},
+      "label": {"displayName": "Label", "purpose": "Compact visit states and metadata."}
+    },
+    "shadows": [],
+    "motion": [
+      {"name": "material-state", "value": "Material 3 standard state transitions", "purpose": "Keep feedback familiar and restrained on Android."}
+    ],
+    "breakpoints": [
+      {"name": "compact-phone", "value": "< 600dp", "purpose": "Bottom navigation and single-column route flow."},
+      {"name": "expanded", "value": ">= 600dp", "purpose": "Allow navigation rail and wider content layouts where implemented."}
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Routine primary actions use evergreen and a clear label.",
+      "html": "<button class=\"ds-btn-primary\">Start route</button>",
+      "css": ".ds-btn-primary { background: #173B34; color: #FFFFFF; border: 0; border-radius: 12px; min-height: 52px; padding: 0 18px; font: 700 14px Inter, Roboto, sans-serif; } .ds-btn-primary:hover { background: #326B5A; } .ds-btn-primary:focus-visible { outline: 3px solid #B95732; outline-offset: 2px; } .ds-btn-primary:active { background: #102824; }"
+    },
+    {
+      "name": "Visit Action Button",
+      "kind": "button",
+      "refersTo": "button-visit",
+      "description": "The current visit has one prominent continuation action.",
+      "html": "<button class=\"ds-btn-visit\">Continue visit</button>",
+      "css": ".ds-btn-visit { background: #B95732; color: #FFFFFF; border: 0; border-radius: 12px; min-height: 54px; padding: 0 18px; font: 700 15px Inter, Roboto, sans-serif; } .ds-btn-visit:hover { background: #9D4C30; } .ds-btn-visit:focus-visible { outline: 3px solid #173B34; outline-offset: 2px; } .ds-btn-visit:active { background: #793C26; }"
+    },
+    {
+      "name": "Field Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Warm chalk surfaces hold route and visit details on the paper canvas.",
+      "html": "<article class=\"ds-card\"><strong>El Nady Pharmacy</strong><p>Nasr City, Cairo</p></article>",
+      "css": ".ds-card { background: #FBFAF6; color: #172F2B; border: 1px solid #C8C9C0; border-radius: 14px; padding: 18px; } .ds-card strong { font: 800 20px Manrope, Roboto, sans-serif; } .ds-card p { margin: 6px 0 0; color: #59615D; font: 400 14px Inter, Roboto, sans-serif; }"
+    },
+    {
+      "name": "Visit Status Chip",
+      "kind": "chip",
+      "refersTo": "status-chip",
+      "description": "A compact filled label distinguishes pending, active, completed and skipped stops.",
+      "html": "<span class=\"ds-chip-active\">Checked in</span>",
+      "css": ".ds-chip-active { display: inline-flex; align-items: center; background: #F3DFD4; color: #B95732; border-radius: 100px; padding: 4px 9px; font: 700 11px Inter, Roboto, sans-serif; }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Material 3 navigation keeps Today, Alerts and Profile available on compact phones.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-active\">Today</a><a>Alerts</a><a>Profile</a></nav>",
+      "css": ".ds-nav { display: flex; justify-content: space-around; align-items: center; height: 80px; background: #FBFAF6; border-top: 1px solid #C8C9C0; color: #59615D; font: 600 12px Inter, Roboto, sans-serif; } .ds-nav a { padding: 12px; } .ds-nav .ds-nav-active { color: #173B34; } .ds-nav a:focus-visible { outline: 3px solid #B95732; outline-offset: 2px; border-radius: 8px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Fieldwork Ledger",
+    "overview": "The interface treats a field day like a clear working ledger: location and visit state are immediately visible, while the next useful action is easy to reach. Evergreen anchors the product, warm paper keeps long route lists comfortable to scan, and terracotta marks a live visit or decisive field action. Material 3 remains the interaction foundation for Android. Use compact, factual labels, strong store names, and open space between tasks. The design carries across the mobile app through shared theme roles; individual workflows keep their existing data and behavior.",
+    "keyCharacteristics": ["Evergreen header and navigation", "Warm paper surfaces with restrained outlines", "Terracotta reserved for the active visit and its main action", "Route progress shown as a connected, numbered timeline"],
+    "rules": [
+      {"name": "The One Active Accent Rule", "body": "Terracotta marks the active visit or its key action; completed work stays green and pending work stays neutral.", "section": "colors"},
+      {"name": "The Scannable Name Rule", "body": "Store names carry more visual weight than their addresses, timestamps, and status metadata.", "section": "typography"},
+      {"name": "The Paper Layer Rule", "body": "Use surface tone and spacing to distinguish content before adding depth.", "section": "elevation"}
+    ],
+    "dos": ["Do keep duty, connectivity, and sync state visible near the top of Today.", "Do place the next actionable store visit before the full route list.", "Do show timestamps only when the visit record supplies them.", "Do preserve clear 48px touch targets for icon actions and route controls."],
+    "donts": ["Don't use terracotta for completed states; reserve it for live work and key actions.", "Don't invent planned time windows, durations, or activities when the visit data does not supply them.", "Don't bury the primary visit action among equally weighted buttons."]
+  }
+}

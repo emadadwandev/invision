@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 enum NotificationType {
   task,
@@ -35,11 +36,11 @@ enum NotificationType {
   };
 
   Color get color => switch (this) {
-    NotificationType.task => Colors.blue,
-    NotificationType.message => Colors.green,
-    NotificationType.alert => Colors.red,
-    NotificationType.announcement => Colors.purple,
-    NotificationType.system => Colors.grey,
+    NotificationType.task => AppColors.primary,
+    NotificationType.message => AppColors.secondary,
+    NotificationType.alert => AppColors.error,
+    NotificationType.announcement => AppColors.tertiary,
+    NotificationType.system => AppColors.outline,
   };
 
   IconData get icon => switch (this) {

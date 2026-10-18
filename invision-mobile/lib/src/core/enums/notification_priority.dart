@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 enum NotificationPriority {
   low,
@@ -31,9 +32,9 @@ enum NotificationPriority {
   };
 
   Color get color => switch (this) {
-    NotificationPriority.low => Colors.grey,
-    NotificationPriority.normal => Colors.blue,
-    NotificationPriority.high => Colors.orange,
-    NotificationPriority.urgent => Colors.red,
+    NotificationPriority.low => AppColors.outline,
+    NotificationPriority.normal => AppColors.primary,
+    NotificationPriority.high => AppColors.tertiary,
+    NotificationPriority.urgent => AppColors.error,
   };
 }

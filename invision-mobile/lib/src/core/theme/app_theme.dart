@@ -9,23 +9,23 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Primary (blue)
-  static const primary = Color(0xFF005BBF);
-  static const primaryContainer = Color(0xFF1A73E8);
+  // Invision field palette: evergreen, warm paper and kiln orange.
+  static const primary = Color(0xFF173B34);
+  static const primaryContainer = Color(0xFF326B5A);
   static const onPrimary = Color(0xFFFFFFFF);
   static const onPrimaryContainer = Color(0xFFFFFFFF);
-  static const primaryFixedDim = Color(0xFFADC7FF);
-  static const inversePrimary = Color(0xFFADC7FF);
+  static const primaryFixedDim = Color(0xFFA9C9BA);
+  static const inversePrimary = Color(0xFFA9C9BA);
 
   // Secondary (green)
-  static const secondary = Color(0xFF1B6D24);
-  static const secondaryContainer = Color(0xFFA0F399);
+  static const secondary = Color(0xFF286C4A);
+  static const secondaryContainer = Color(0xFFD8EADD);
   static const onSecondary = Color(0xFFFFFFFF);
-  static const onSecondaryContainer = Color(0xFF217128);
+  static const onSecondaryContainer = Color(0xFF20523A);
 
   // Tertiary (orange)
-  static const tertiary = Color(0xFFA83900);
-  static const tertiaryContainer = Color(0xFFD14900);
+  static const tertiary = Color(0xFFB95732);
+  static const tertiaryContainer = Color(0xFFF3DFD4);
   static const onTertiary = Color(0xFFFFFFFF);
   static const onTertiaryContainer = Color(0xFFFFFFFF);
 
@@ -36,27 +36,31 @@ class AppColors {
   static const onErrorContainer = Color(0xFF93000A);
 
   // Surface / Background
-  static const background = Color(0xFFF3FAFF);
-  static const onBackground = Color(0xFF071E27);
-  static const surface = Color(0xFFF3FAFF);
-  static const onSurface = Color(0xFF071E27);
-  static const surfaceVariant = Color(0xFFCFE6F2);
-  static const onSurfaceVariant = Color(0xFF414754);
-  static const surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const surfaceContainerLow = Color(0xFFE6F6FF);
-  static const surfaceContainer = Color(0xFFDBF1FE);
-  static const surfaceContainerHigh = Color(0xFFD5ECF8);
-  static const surfaceContainerHighest = Color(0xFFCFE6F2);
-  static const surfaceTint = Color(0xFF005BC0);
-  static const surfaceDim = Color(0xFFC7DDE9);
+  static const background = Color(0xFFF3F0E8);
+  static const onBackground = Color(0xFF172F2B);
+  static const surface = Color(0xFFF3F0E8);
+  static const onSurface = Color(0xFF172F2B);
+  static const surfaceVariant = Color(0xFFD9D8CF);
+  static const onSurfaceVariant = Color(0xFF59615D);
+  static const surfaceContainerLowest = Color(0xFFFBFAF6);
+  static const surfaceContainerLow = Color(0xFFEDEAE1);
+  static const surfaceContainer = Color(0xFFE7E4DA);
+  static const surfaceContainerHigh = Color(0xFFDEDBD1);
+  static const surfaceContainerHighest = Color(0xFFD5D2C8);
+  static const surfaceTint = Color(0xFF173B34);
+  static const surfaceDim = Color(0xFFD3D0C7);
+
+  static const heroBackground = Color(0xFF173B34);
+  static const onHero = Color(0xFFFCFAF4);
+  static const heroMuted = Color(0xFFC7D4CD);
 
   // Outline
-  static const outline = Color(0xFF727785);
-  static const outlineVariant = Color(0xFFC1C6D6);
+  static const outline = Color(0xFF707872);
+  static const outlineVariant = Color(0xFFC8C9C0);
 
   // Inverse
-  static const inverseSurface = Color(0xFF1E333C);
-  static const inverseOnSurface = Color(0xFFDFF4FF);
+  static const inverseSurface = Color(0xFF263A35);
+  static const inverseOnSurface = Color(0xFFF0EEE6);
 }
 
 class AppTextStyles {
@@ -225,7 +229,7 @@ class AppTheme {
 
       // AppBar
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.surface.withOpacity(0.85),
+        backgroundColor: AppColors.surface.withValues(alpha: 0.85),
         foregroundColor: AppColors.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -240,6 +244,58 @@ class AppTheme {
         color: AppColors.surfaceContainerLowest,
         elevation: 0,
         margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: _borderRadius),
+      ),
+
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.onSurfaceVariant,
+        textColor: AppColors.onSurface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        minVerticalPadding: 10,
+        shape: RoundedRectangleBorder(borderRadius: _borderRadius),
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: _borderRadius),
+        titleTextStyle: AppTextStyles.headlineSmall.copyWith(
+          color: AppColors.onSurface,
+        ),
+        contentTextStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
+      ),
+
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        dragHandleColor: AppColors.outlineVariant,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.inverseSurface,
+        contentTextStyle: AppTextStyles.bodyMedium.copyWith(
+          color: AppColors.inverseOnSurface,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: _borderRadius),
+      ),
+
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
+        linearTrackColor: AppColors.surfaceContainerHigh,
+        circularTrackColor: AppColors.surfaceContainerHigh,
+      ),
+
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: _borderRadius),
       ),
 
@@ -287,15 +343,23 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: _borderRadius,
-          borderSide: const BorderSide(color: AppColors.primaryContainer, width: 2),
+          borderSide: const BorderSide(
+            color: AppColors.primaryContainer,
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: _borderRadius,
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.outline),
-        labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColors.onSurfaceVariant),
+        labelStyle: AppTextStyles.labelMedium.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
       ),
 
       // Chip
@@ -310,7 +374,7 @@ class AppTheme {
       // NavigationBar
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surfaceContainerLowest,
-        indicatorColor: AppColors.primaryContainer.withOpacity(0.2),
+        indicatorColor: AppColors.primaryContainer.withValues(alpha: 0.2),
         labelTextStyle: WidgetStateProperty.all(AppTextStyles.labelMedium),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {

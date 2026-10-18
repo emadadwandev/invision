@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ import '../../../../core/enums/visit_status.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../gps_tracking/presentation/providers/gps_tracking_providers.dart';
 import '../../../notifications/presentation/providers/notifications_providers.dart';
+import '../../../offline/presentation/providers/offline_providers.dart';
 import '../../../routes/data/models/route_instance_model.dart';
 import '../../../routes/presentation/providers/route_providers.dart';
 
@@ -48,8 +50,8 @@ class FieldForceHomePage extends ConsumerWidget {
               ref.read(_fieldForceTabProvider.notifier).state = i,
           destinations: [
             const NavigationDestination(
-              icon: Icon(Icons.today_outlined),
-              selectedIcon: Icon(Icons.today_rounded),
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
               label: 'Today',
             ),
             NavigationDestination(
@@ -63,7 +65,7 @@ class FieldForceHomePage extends ConsumerWidget {
                 label: Text('$unreadCount'),
                 child: const Icon(Icons.notifications_rounded),
               ),
-              label: 'Notifications',
+              label: 'Alerts',
             ),
             const NavigationDestination(
               icon: Icon(Icons.person_outline),
@@ -89,63 +91,8 @@ class _TodayTab extends ConsumerWidget {
     final user = ref.watch(authProvider).user;
     final trackingState = ref.watch(gpsTrackingControllerProvider);
 
-    final unreadAsync = ref.watch(unreadNotificationCountProvider);
-    final unreadCount = unreadAsync.valueOrNull ?? 0;
-    final tt = Theme.of(context).textTheme;
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface.withOpacity(0.9),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Good Morning',
-              style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
-            ),
-            Text(
-              user?.name.split(' ').first ?? 'there',
-              style: tt.titleLarge?.copyWith(color: AppColors.onSurface),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Add store',
-            icon: const Icon(Icons.add_business_outlined),
-            color: AppColors.onSurface,
-            onPressed: () => context.push('/stores/create'),
-          ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined, size: 26),
-                color: AppColors.onSurface,
-                onPressed: () =>
-                    ref.read(_fieldForceTabProvider.notifier).state = 1,
-              ),
-              if (unreadCount > 0)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: () async {
@@ -153,159 +100,259 @@ class _TodayTab extends ConsumerWidget {
           ref.invalidate(activeDutyProvider);
           ref.invalidate(unreadNotificationCountProvider);
         },
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Duty card
-            _DutyCard(trackingState: trackingState),
-            const SizedBox(height: 16),
-            // Today's route
-            _TodayRouteSection(),
-          ],
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _TodayHeader(
+                userName: user?.name ?? 'there',
+                trackingState: trackingState,
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 20, 16, 28),
+                child: _TodayRouteSection(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Duty Card
-// ─────────────────────────────────────────────────────────────
+class _TodayHeader extends ConsumerWidget {
+  const _TodayHeader({required this.userName, required this.trackingState});
 
-class _DutyCard extends ConsumerWidget {
-  const _DutyCard({required this.trackingState});
-
+  final String userName;
   final GpsTrackingState trackingState;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isActive = trackingState.isDutyActive;
-    final tt = Theme.of(context).textTheme;
+    final unreadCount =
+        ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
+    final sync = ref.watch(syncStatusProvider);
+    final firstName = userName.trim().split(' ').first;
+    final hour = TimeOfDay.now().hour;
+    final greeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+        ? 'Good afternoon'
+        : 'Good evening';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
+    String syncLabel;
+    IconData syncIcon;
+    if (sync.isLoading) {
+      syncLabel = 'Checking sync';
+      syncIcon = Icons.sync_rounded;
+    } else if (sync.valueOrNull?.isOnline == false) {
+      final pending = sync.valueOrNull?.pendingActions ?? 0;
+      syncLabel = pending > 0 ? '$pending changes queued' : 'Offline';
+      syncIcon = Icons.cloud_off_outlined;
+    } else if (sync.valueOrNull?.isSyncing == true) {
+      syncLabel = 'Syncing now';
+      syncIcon = Icons.sync_rounded;
+    } else if ((sync.valueOrNull?.pendingActions ?? 0) > 0) {
+      syncLabel = '${sync.valueOrNull!.pendingActions} changes waiting';
+      syncIcon = Icons.sync_problem_rounded;
+    } else {
+      syncLabel = 'All changes synced';
+      syncIcon = Icons.sync_rounded;
+    }
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: AppColors.heroBackground,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: AppColors.surface,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: isActive ? AppColors.secondary : AppColors.outline,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                isActive ? 'On Duty' : 'Off Duty',
-                style: tt.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isActive
-                      ? AppColors.secondary
-                      : AppColors.onSurfaceVariant,
-                ),
-              ),
-              const Spacer(),
-              if (isActive && trackingState.lastPosition != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryContainer,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.gps_fixed,
-                        size: 12,
-                        color: AppColors.onSecondaryContainer,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        trackingState.lastPosition!.speed > 0
-                            ? '${(trackingState.lastPosition!.speed * 3.6).toStringAsFixed(1)} km/h'
-                            : 'GPS Active',
-                        style: tt.labelSmall?.copyWith(
-                          color: AppColors.onSecondaryContainer,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                    ],
+      child: Container(
+        color: AppColors.heroBackground,
+        padding: EdgeInsets.fromLTRB(
+          24,
+          MediaQuery.viewPaddingOf(context).top + 12,
+          20,
+          24,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'INVISION',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.onHero,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.1,
                   ),
                 ),
-            ],
-          ),
-          if (trackingState.error != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              trackingState.error!,
-              style: const TextStyle(color: AppColors.error, fontSize: 12),
-            ),
-          ],
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () async {
-                final controller = ref.read(
-                  gpsTrackingControllerProvider.notifier,
-                );
-                if (isActive) {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('End Duty?'),
-                      content: const Text(
-                        'GPS tracking will stop and your duty session will be recorded.',
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Add store',
+                  icon: const Icon(Icons.add_business_outlined),
+                  color: AppColors.onHero,
+                  onPressed: () => context.push('/stores/create'),
+                ),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      tooltip: 'Notifications',
+                      icon: const Icon(
+                        Icons.notifications_none_rounded,
+                        size: 27,
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text('Cancel'),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.error,
-                          ),
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('End Duty'),
-                        ),
-                      ],
+                      color: AppColors.onHero,
+                      onPressed: () =>
+                          ref.read(_fieldForceTabProvider.notifier).state = 1,
                     ),
-                  );
-                  if (confirm == true) await controller.endDuty();
-                } else {
-                  await controller.startDuty();
-                }
-              },
-              icon: Icon(
-                isActive
-                    ? Icons.stop_circle_outlined
-                    : Icons.play_circle_outline,
-              ),
-              label: Text(isActive ? 'End Duty' : 'Start Duty'),
-              style: FilledButton.styleFrom(
-                backgroundColor: isActive
-                    ? AppColors.error
-                    : AppColors.secondary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                    if (unreadCount > 0)
+                      Positioned(
+                        top: 5,
+                        right: 5,
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.tertiary,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            unreadCount > 9 ? '9+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '$greeting, $firstName',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: AppColors.onHero,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              'Today',
+              style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                color: AppColors.onHero,
+                fontSize: 48,
+                height: 1.05,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? const Color(0xFF67C78F)
+                        : AppColors.tertiary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isActive ? 'On Duty' : 'Off Duty',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.onHero,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 1,
+                  height: 20,
+                  color: AppColors.heroMuted.withValues(alpha: 0.5),
+                ),
+                const SizedBox(width: 12),
+                Icon(syncIcon, size: 18, color: AppColors.heroMuted),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(6),
+                    onTap: () => context.push('/sync'),
+                    child: Text(
+                      syncLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.heroMuted,
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: isActive ? 'End duty' : 'Start duty',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () async {
+                    final controller = ref.read(
+                      gpsTrackingControllerProvider.notifier,
+                    );
+                    if (!isActive) {
+                      await controller.startDuty();
+                      return;
+                    }
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('End Duty?'),
+                        content: const Text(
+                          'GPS tracking will stop and your duty session will be recorded.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel'),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.error,
+                            ),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('End Duty'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) await controller.endDuty();
+                  },
+                  icon: Icon(
+                    isActive
+                        ? Icons.stop_circle_outlined
+                        : Icons.play_circle_outline_rounded,
+                  ),
+                  color: AppColors.onHero,
+                ),
+              ],
+            ),
+            if (trackingState.error != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                trackingState.error!,
+                style: const TextStyle(color: Color(0xFFFFD3C2), fontSize: 12),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -570,103 +617,114 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
   @override
   Widget build(BuildContext context) {
     final instance = widget.instance;
-    final activeVisits = instance.visits
+    final visits = [...instance.visits]
+      ..sort((a, b) => a.visitOrder.compareTo(b.visitOrder));
+    final currentVisit = visits.cast<StoreVisit?>().firstWhere(
+      (visit) => visit?.status == VisitStatus.checkedIn,
+      orElse: () => visits.cast<StoreVisit?>().firstWhere(
+        (visit) => visit?.status == VisitStatus.pending,
+        orElse: () => null,
+      ),
+    );
+    final remaining = visits
         .where(
           (visit) =>
               visit.status == VisitStatus.pending ||
               visit.status == VisitStatus.checkedIn,
         )
-        .toList();
+        .length;
     final notStarted = instance.status == RouteStatus.published;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Route header card
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      instance.routePlanName ??
-                          'Route #${instance.routePlanId}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                  ),
-                  _StatusBadge(status: instance.status),
-                ],
-              ),
-              const SizedBox(height: 14),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: LinearProgressIndicator(
-                  value: instance.completionPercentage / 100,
-                  backgroundColor: AppColors.surfaceContainerHigh,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.primary,
-                  ),
-                  minHeight: 7,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Text(
+                'Today’s route',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppColors.onSurface,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${instance.completedVisits} of ${instance.totalVisits} visits',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                  Text(
-                    '${instance.completionPercentage.toStringAsFixed(0)}%',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0,
-                    ),
-                  ),
-                ],
+            ),
+            Text(
+              '${instance.totalVisits} stores · $remaining remaining',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.onSurfaceVariant,
               ),
-              if (notStarted) ...[
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _loading ? null : _startRoute,
-                    icon: _loading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Start Route'),
-                  ),
-                ),
-              ],
-            ],
-          ),
+            ),
+          ],
         ),
-
-        const SizedBox(height: 8),
-
-        // Store visits
-        if (instance.visits.isNotEmpty && activeVisits.isEmpty) ...[
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                instance.routePlanName ?? 'Route #${instance.routePlanId}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+            ),
+            _StatusBadge(status: instance.status),
+          ],
+        ),
+        if (notStarted) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _loading ? null : _startRoute,
+              icon: _loading
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.play_arrow_rounded),
+              label: const Text('Start route'),
+            ),
+          ),
+        ],
+        if (currentVisit != null) ...[
+          const SizedBox(height: 16),
+          _CurrentVisitCard(
+            visit: currentVisit,
+            totalVisits: instance.totalVisits,
+            isCheckedIn: currentVisit.status == VisitStatus.checkedIn,
+            isLoading: _loading,
+            onContinue: () =>
+                context.push('/visits/${currentVisit.id}/capture'),
+            onCheckIn: () => _checkIn(currentVisit),
+            onNavigate: () => _navigateToStore(currentVisit),
+            onCheckOut: () => _checkOut(currentVisit),
+            onPos: () => context.push(
+              '/pos/create/${currentVisit.storeId}',
+              extra: {
+                'storeName':
+                    currentVisit.store?.name ??
+                    'Store #${currentVisit.storeId}',
+              },
+            ),
+            onOrder: () => context.push(
+              '/sales/create',
+              extra: {
+                'storeId': currentVisit.storeId,
+                'storeName':
+                    currentVisit.store?.name ??
+                    'Store #${currentVisit.storeId}',
+              },
+            ),
+            onSkip: () => _skipVisit(currentVisit),
+          ),
+        ] else if (visits.isNotEmpty && remaining == 0) ...[
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
@@ -682,119 +740,277 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
                   color: AppColors.secondary,
                 ),
                 SizedBox(width: 10),
-                Expanded(child: Text('No remaining stores on today’s route.')),
+                Expanded(
+                  child: Text('No remaining visits on today’s route.'),
+                ),
               ],
             ),
           ),
         ],
-        if (activeVisits.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Text(
-              'Store Visits',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.onSurface,
-              ),
+        if (visits.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          for (var i = 0; i < visits.length; i++)
+            _RouteTimelineItem(
+              visit: visits[i],
+              isLast: i == visits.length - 1,
+              isCurrent: visits[i].id == currentVisit?.id,
+              onOpen: () => context.push('/stores/${visits[i].storeId}'),
+              onCheckIn: () => _checkIn(visits[i]),
+              onNavigate: () => _navigateToStore(visits[i]),
+              onSkip: () => _skipVisit(visits[i]),
             ),
-          ),
-          ...activeVisits.map(
-            (visit) => _StoreVisitCard(
-              visit: visit,
-              index: visit.visitOrder,
-              onCheckIn: _loading ? null : () => _checkIn(visit),
-              onCheckOut: _loading ? null : () => _checkOut(visit),
-              onSkip: _loading ? null : () => _skipVisit(visit),
-              onCapture: _loading
-                  ? null
-                  : () => context.push('/visits/${visit.id}/capture'),
-              onPos: _loading
-                  ? null
-                  : () => context.push(
-                      '/pos/create/${visit.storeId}',
-                      extra: {
-                        'storeName':
-                            visit.store?.name ?? 'Store #${visit.storeId}',
-                      },
-                    ),
-              onNavigate: () => _navigateToStore(visit),
-              onOpenStore: () => context.push('/stores/${visit.storeId}'),
-            ),
-          ),
         ],
       ],
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Store Visit Card
-// ─────────────────────────────────────────────────────────────
-
-class _StoreVisitCard extends StatelessWidget {
-  const _StoreVisitCard({
+class _CurrentVisitCard extends StatelessWidget {
+  const _CurrentVisitCard({
     required this.visit,
-    required this.index,
+    required this.totalVisits,
+    required this.isCheckedIn,
+    required this.isLoading,
+    required this.onContinue,
+    required this.onCheckIn,
     required this.onNavigate,
-    required this.onOpenStore,
-    this.onCheckIn,
-    this.onCheckOut,
-    this.onSkip,
-    this.onCapture,
-    this.onPos,
+    required this.onCheckOut,
+    required this.onPos,
+    required this.onOrder,
+    required this.onSkip,
   });
 
   final StoreVisit visit;
-  final int index;
-  final VoidCallback? onCheckIn;
-  final VoidCallback? onCheckOut;
-  final VoidCallback? onSkip;
-  final VoidCallback? onCapture;
-  final VoidCallback? onPos;
+  final int totalVisits;
+  final bool isCheckedIn;
+  final bool isLoading;
+  final VoidCallback onContinue;
+  final VoidCallback onCheckIn;
   final VoidCallback onNavigate;
-  final VoidCallback onOpenStore;
+  final VoidCallback onCheckOut;
+  final VoidCallback onPos;
+  final VoidCallback onOrder;
+  final VoidCallback onSkip;
 
   @override
   Widget build(BuildContext context) {
-    final store = visit.store;
-    final isCompleted = visit.status == VisitStatus.completed;
-    final isCheckedIn = visit.status == VisitStatus.checkedIn;
-    final isSkipped = visit.status == VisitStatus.skipped;
-    final isPending = visit.status == VisitStatus.pending;
-    final tt = Theme.of(context).textTheme;
-
-    final borderColor = isCompleted
-        ? AppColors.secondary
-        : isCheckedIn
-        ? AppColors.primaryContainer
-        : AppColors.outlineVariant;
+    final storeName = visit.store?.name ?? 'Store #${visit.storeId}';
+    final location = visit.store?.areaName ?? visit.store?.address;
+    final checkInTime = _visitTime(visit.checkedInAt);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(14),
-        border: Border(left: BorderSide(color: borderColor, width: 4)),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.65),
+        ),
       ),
-      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Visit number badge
+              Expanded(
+                child: Text(
+                  isCheckedIn ? 'ACTIVE VISIT' : 'UP NEXT',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.tertiary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ),
+              if (isCheckedIn)
+                _VisitStatusChip(status: visit.status)
+              else
+                Text(
+                  '${visit.visitOrder} OF $totalVisits',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            storeName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          if (location != null && location.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on_rounded,
+                  size: 18,
+                  color: AppColors.onSurfaceVariant,
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    location,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (checkInTime != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  Icons.radio_button_checked_rounded,
+                  size: 17,
+                  color: AppColors.tertiary,
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  'Checked in · $checkInTime',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: isLoading
+                      ? null
+                      : (isCheckedIn ? onContinue : onCheckIn),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.tertiary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(54),
+                  ),
+                  icon: Icon(
+                    isCheckedIn
+                        ? Icons.arrow_forward_rounded
+                        : Icons.qr_code_scanner_rounded,
+                  ),
+                  label: Text(isCheckedIn ? 'Continue visit' : 'Check in'),
+                ),
+              ),
+              const SizedBox(width: 4),
+              PopupMenuButton<String>(
+                tooltip: 'More visit actions',
+                enabled: !isLoading,
+                onSelected: (action) {
+                  switch (action) {
+                    case 'navigate':
+                      onNavigate();
+                    case 'pos':
+                      onPos();
+                    case 'order':
+                      onOrder();
+                    case 'checkout':
+                      onCheckOut();
+                    case 'skip':
+                      onSkip();
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (visit.store?.gpsLatitude != null)
+                    const PopupMenuItem(
+                      value: 'navigate',
+                      child: Text('Navigate to store'),
+                    ),
+                  if (isCheckedIn) ...[
+                    const PopupMenuItem(
+                      value: 'pos',
+                      child: Text('Record POS sale'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'order',
+                      child: Text('Create order'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'checkout',
+                      child: Text('Check out'),
+                    ),
+                  ] else
+                    const PopupMenuItem(
+                      value: 'skip',
+                      child: Text('Skip visit'),
+                    ),
+                ],
+                child: const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Icon(
+                    Icons.more_horiz_rounded,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RouteTimelineItem extends StatelessWidget {
+  const _RouteTimelineItem({
+    required this.visit,
+    required this.isLast,
+    required this.isCurrent,
+    required this.onOpen,
+    required this.onCheckIn,
+    required this.onNavigate,
+    required this.onSkip,
+  });
+
+  final StoreVisit visit;
+  final bool isLast;
+  final bool isCurrent;
+  final VoidCallback onOpen;
+  final VoidCallback onCheckIn;
+  final VoidCallback onNavigate;
+  final VoidCallback onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCompleted = visit.status == VisitStatus.completed;
+    final isSkipped = visit.status == VisitStatus.skipped;
+    final markerColor = isCompleted
+        ? AppColors.secondary
+        : isCurrent
+        ? AppColors.tertiary
+        : AppColors.outline;
+    final storeName = visit.store?.name ?? 'Store #${visit.storeId}';
+    final location = visit.store?.areaName ?? visit.store?.address;
+    final time = _visitTime(visit.checkedOutAt ?? visit.checkedInAt);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          width: 42,
+          child: Column(
+            children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
-                  color: isCompleted
-                      ? AppColors.secondary
-                      : isSkipped
-                      ? AppColors.outline
-                      : AppColors.primary,
+                  color: markerColor,
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
@@ -802,172 +1018,146 @@ class _StoreVisitCard extends StatelessWidget {
                     ? const Icon(
                         Icons.check_rounded,
                         color: Colors.white,
-                        size: 18,
+                        size: 21,
                       )
                     : isSkipped
                     ? const Icon(
-                        Icons.skip_next_rounded,
+                        Icons.remove_rounded,
                         color: Colors.white,
-                        size: 18,
+                        size: 21,
                       )
                     : Text(
-                        '$index',
+                        '${visit.visitOrder}',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    color: isCompleted
+                        ? AppColors.secondary.withValues(alpha: 0.65)
+                        : AppColors.outlineVariant,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
+            child: InkWell(
+              onTap: onOpen,
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GestureDetector(
-                      onTap: onOpenStore,
-                      child: Text(
-                        store?.name ?? 'Store #${visit.storeId}',
-                        style: tt.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
-                          decoration: TextDecoration.underline,
-                          decorationColor: AppColors.primary,
-                        ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            storeName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: AppColors.onSurface,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          if (location != null && location.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              location,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.onSurfaceVariant),
+                            ),
+                          ],
+                          if (time != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              isCompleted
+                                  ? 'Completed · $time'
+                                  : 'Checked in · $time',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.onSurfaceVariant),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    if (store?.address != null)
-                      Text(
-                        store!.address!,
-                        style: tt.bodySmall?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    if (store?.areaName != null)
-                      Text(
-                        store!.areaName!,
-                        style: tt.bodySmall?.copyWith(color: AppColors.outline),
-                      ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _VisitStatusChip(status: visit.status),
+                        if (!isCompleted && !isSkipped)
+                          PopupMenuButton<String>(
+                            tooltip: 'Visit actions',
+                            onSelected: (action) {
+                              if (action == 'checkin') onCheckIn();
+                              if (action == 'navigate') onNavigate();
+                              if (action == 'skip') onSkip();
+                            },
+                            itemBuilder: (context) => [
+                              if (visit.status == VisitStatus.pending)
+                                const PopupMenuItem(
+                                  value: 'checkin',
+                                  child: Text('Check in'),
+                                ),
+                              if (visit.store?.gpsLatitude != null)
+                                const PopupMenuItem(
+                                  value: 'navigate',
+                                  child: Text('Navigate'),
+                                ),
+                              if (visit.status == VisitStatus.pending)
+                                const PopupMenuItem(
+                                  value: 'skip',
+                                  child: Text('Skip visit'),
+                                ),
+                            ],
+                            child: const SizedBox(
+                              width: 48,
+                              height: 48,
+                              child: Icon(
+                                Icons.more_horiz_rounded,
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              _VisitStatusChip(status: visit.status),
-            ],
+            ),
           ),
-
-          // Check-in/out times
-          if (visit.checkedInAt != null || visit.checkedOutAt != null) ...[
-            const SizedBox(height: 8),
-            const Divider(height: 1),
-            const SizedBox(height: 6),
-            if (visit.checkedInAt != null)
-              _TimeRow(
-                icon: Icons.login,
-                label: 'Checked In',
-                time: visit.checkedInAt!,
-                color: AppColors.primaryContainer,
-              ),
-            if (visit.checkedOutAt != null)
-              _TimeRow(
-                icon: Icons.logout,
-                label: 'Checked Out',
-                time: visit.checkedOutAt!,
-                color: AppColors.secondary,
-              ),
-            if (visit.durationMinutes != null)
-              _TimeRow(
-                icon: Icons.timer_outlined,
-                label: 'Duration',
-                time: '${visit.durationMinutes} min',
-                color: AppColors.tertiary,
-              ),
-          ],
-
-          if (isSkipped && visit.skipReason != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              'Reason: ${visit.skipReason}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-
-          // Action buttons
-          if (!isCompleted && !isSkipped) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                // Navigate to store (always available)
-                if (store?.gpsLatitude != null)
-                  _ActionButton(
-                    icon: Icons.navigation_outlined,
-                    label: 'Navigate',
-                    color: AppColors.primary,
-                    onPressed: onNavigate,
-                  ),
-                // Check-in (only when pending, route in progress)
-                if (isPending)
-                  _ActionButton(
-                    icon: Icons.login,
-                    label: 'Check In',
-                    color: AppColors.primaryContainer,
-                    onPressed: onCheckIn,
-                  ),
-                // Check-out (only when checked-in)
-                if (isCheckedIn) ...[
-                  _ActionButton(
-                    icon: Icons.fact_check_outlined,
-                    label: 'Visit Data',
-                    color: AppColors.primary,
-                    onPressed: onCapture,
-                  ),
-                  _ActionButton(
-                    icon: Icons.point_of_sale,
-                    label: 'POS Sale',
-                    color: AppColors.tertiary,
-                    onPressed: onPos,
-                  ),
-                  _ActionButton(
-                    icon: Icons.logout,
-                    label: 'Check Out',
-                    color: AppColors.secondary,
-                    onPressed: onCheckOut,
-                  ),
-                  _ActionButton(
-                    icon: Icons.point_of_sale,
-                    label: 'Create Order',
-                    color: AppColors.tertiary,
-                    onPressed: () => context.push(
-                      '/sales/create',
-                      extra: {
-                        'storeId': visit.storeId,
-                        'storeName':
-                            visit.store?.name ?? 'Store #${visit.storeId}',
-                      },
-                    ),
-                  ),
-                ],
-                // Skip (only when pending)
-                if (isPending)
-                  _ActionButton(
-                    icon: Icons.skip_next,
-                    label: 'Skip',
-                    color: AppColors.outline,
-                    onPressed: onSkip,
-                  ),
-              ],
-            ),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
+  }
+}
+
+String? _visitTime(String? value) {
+  if (value == null) return null;
+  try {
+    final date = DateTime.parse(value).toLocal();
+    final hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final period = date.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  } catch (_) {
+    return null;
   }
 }
 
@@ -1065,7 +1255,9 @@ class _NotificationsTab extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: n.isRead
                                 ? AppColors.surfaceContainerHigh
-                                : AppColors.primaryContainer.withOpacity(0.2),
+                                : AppColors.primaryContainer.withValues(
+                                    alpha: 0.2,
+                                  ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
@@ -1147,7 +1339,7 @@ class _ProfileTab extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.surface.withOpacity(0.9),
+        backgroundColor: AppColors.surface.withValues(alpha: 0.9),
         elevation: 0,
         title: Text(
           'Profile',
@@ -1282,7 +1474,7 @@ class _ProfileTab extends ConsumerWidget {
                   onTap: () => context.push('/language'),
                 ),
                 Divider(
-                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
                   height: 1,
                   indent: 54,
                 ),
@@ -1292,7 +1484,7 @@ class _ProfileTab extends ConsumerWidget {
                   onTap: () => context.push('/sync'),
                 ),
                 Divider(
-                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
                   height: 1,
                   indent: 54,
                 ),
@@ -1302,7 +1494,7 @@ class _ProfileTab extends ConsumerWidget {
                   onTap: () => context.push('/assigned-tasks'),
                 ),
                 Divider(
-                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
                   height: 1,
                   indent: 54,
                 ),
@@ -1412,7 +1604,7 @@ class _StatusBadge extends StatelessWidget {
     final (color, bg) = switch (status) {
       RouteStatus.inProgress => (
         AppColors.primaryContainer,
-        AppColors.primaryContainer.withOpacity(0.15),
+        AppColors.primaryContainer.withValues(alpha: 0.15),
       ),
       RouteStatus.completed => (
         AppColors.secondary,
@@ -1420,7 +1612,7 @@ class _StatusBadge extends StatelessWidget {
       ),
       RouteStatus.published => (
         AppColors.tertiary,
-        AppColors.tertiaryContainer.withOpacity(0.25),
+        AppColors.tertiaryContainer.withValues(alpha: 0.25),
       ),
       RouteStatus.cancelled => (AppColors.error, AppColors.errorContainer),
       _ => (AppColors.onSurfaceVariant, AppColors.surfaceContainerHigh),
@@ -1497,8 +1689,8 @@ class _VisitStatusChip extends StatelessWidget {
         Icons.circle_outlined,
       ),
       VisitStatus.checkedIn => (
-        AppColors.primaryContainer,
-        AppColors.primaryContainer.withOpacity(0.15),
+        AppColors.tertiary,
+        AppColors.tertiaryContainer,
         Icons.login_rounded,
       ),
       VisitStatus.completed => (
@@ -1529,101 +1721,6 @@ class _VisitStatusChip extends StatelessWidget {
               color: color,
               fontSize: 10,
               fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Inter',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TimeRow extends StatelessWidget {
-  const _TimeRow({
-    required this.icon,
-    required this.label,
-    required this.time,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final String time;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    // Format ISO time to readable
-    String displayTime = time;
-    try {
-      final dt = DateTime.parse(time);
-      displayTime =
-          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {}
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-          Text(
-            displayTime,
-            style: TextStyle(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],

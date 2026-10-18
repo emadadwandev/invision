@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 enum StockMovementType {
   stockIn,
@@ -39,11 +40,11 @@ enum StockMovementType {
   };
 
   Color get color => switch (this) {
-    StockMovementType.stockIn => Colors.green,
-    StockMovementType.stockOut => Colors.red,
-    StockMovementType.adjustment => Colors.orange,
-    StockMovementType.stockReturn => Colors.blue,
-    StockMovementType.sellOut => Colors.indigo,
-    StockMovementType.sellThrough => Colors.purple,
+    StockMovementType.stockIn => AppColors.secondary,
+    StockMovementType.stockOut => AppColors.error,
+    StockMovementType.adjustment => AppColors.tertiary,
+    StockMovementType.stockReturn => AppColors.primaryContainer,
+    StockMovementType.sellOut => AppColors.primary,
+    StockMovementType.sellThrough => AppColors.secondary,
   };
 }

@@ -58,12 +58,6 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = [
-      Colors.blue, Colors.green, Colors.purple,
-      Colors.orange, Colors.amber, Colors.red,
-    ];
-    final color = colors[report.index % colors.length];
-
     return GestureDetector(
       onTap: () => context.push('/reports/${report.slug}'),
       child: Container(

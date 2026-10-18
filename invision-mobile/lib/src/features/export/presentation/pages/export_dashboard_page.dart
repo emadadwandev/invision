@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../providers/export_providers.dart';
 
 class ExportDashboardPage extends ConsumerWidget {
@@ -25,7 +26,7 @@ class ExportDashboardPage extends ConsumerWidget {
                   child: _QuickActionCard(
                     icon: Icons.slideshow,
                     label: 'Market Review',
-                    color: Colors.blue,
+                    color: AppColors.primary,
                     onTap: () => context.push('/presentations/market-review'),
                   ),
                 ),
@@ -34,7 +35,7 @@ class ExportDashboardPage extends ConsumerWidget {
                   child: _QuickActionCard(
                     icon: Icons.description,
                     label: 'Report Templates',
-                    color: Colors.green,
+                    color: AppColors.secondary,
                     onTap: () => context.push('/report-templates'),
                   ),
                 ),
@@ -47,7 +48,7 @@ class ExportDashboardPage extends ConsumerWidget {
                   child: _QuickActionCard(
                     icon: Icons.view_carousel,
                     label: 'Presentation Templates',
-                    color: Colors.orange,
+                    color: AppColors.tertiary,
                     onTap: () => context.push('/presentation-templates'),
                   ),
                 ),
@@ -56,7 +57,7 @@ class ExportDashboardPage extends ConsumerWidget {
                   child: _QuickActionCard(
                     icon: Icons.history,
                     label: 'Export History',
-                    color: Colors.purple,
+                    color: AppColors.primaryContainer,
                     onTap: () => context.push('/saved-exports'),
                   ),
                 ),
@@ -179,12 +180,12 @@ class _RecentExportsList extends StatelessWidget {
 
   Color _formatColor(String format) {
     return switch (format) {
-      'csv' => Colors.teal,
-      'excel' => Colors.green,
-      'pdf' => Colors.red,
-      'presentation' => Colors.blue,
-      'html' => Colors.orange,
-      _ => Colors.grey,
+      'csv' => AppColors.primary,
+      'excel' => AppColors.secondary,
+      'pdf' => AppColors.error,
+      'presentation' => AppColors.primaryContainer,
+      'html' => AppColors.tertiary,
+      _ => AppColors.outline,
     };
   }
 

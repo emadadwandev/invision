@@ -70,7 +70,7 @@ class _MfaSetupPageState extends ConsumerState<MfaSetupPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('MFA enabled successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.secondary,
           ),
         );
       }
@@ -100,7 +100,7 @@ class _MfaSetupPageState extends ConsumerState<MfaSetupPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('MFA has been disabled'),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppColors.tertiary,
           ),
         );
       }

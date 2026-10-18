@@ -210,7 +210,7 @@ class _ReportTable extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Text(
             '${report.rows.length} rows  ·  ${report.period ?? ''}',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
           ),
         ),
         Expanded(
@@ -234,7 +234,7 @@ class _ReportTable extends StatelessWidget {
                 rows: List.generate(report.rows.length, (i) {
                   final row = report.rows[i];
                   return DataRow(cells: [
-                    DataCell(Text('${i + 1}', style: const TextStyle(fontSize: 12, color: Colors.grey))),
+                    DataCell(Text('${i + 1}', style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant))),
                     ...columns.map((c) {
                       final val = row[c];
                       return DataCell(Text(

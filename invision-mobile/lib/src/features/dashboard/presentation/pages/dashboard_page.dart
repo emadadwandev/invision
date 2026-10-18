@@ -285,9 +285,9 @@ class _OverviewSection extends StatelessWidget {
           children: [
             _KpiCard(label: 'Users', value: '', icon: Icons.people_rounded, accent: AppColors.primary),
             _KpiCard(label: 'Field Force', value: '', icon: Icons.groups_rounded, accent: AppColors.secondary),
-            _KpiCard(label: 'Online', value: '', icon: Icons.wifi_rounded, accent: const Color(0xFF1B6D24)),
+            _KpiCard(label: 'Online', value: '', icon: Icons.wifi_rounded, accent: AppColors.secondary),
             _KpiCard(label: 'Stores', value: '', icon: Icons.store_rounded, accent: AppColors.tertiary),
-            _KpiCard(label: 'Campaigns', value: '', icon: Icons.campaign_rounded, accent: const Color(0xFF7B5800)),
+            _KpiCard(label: 'Campaigns', value: '', icon: Icons.campaign_rounded, accent: AppColors.tertiary),
             _KpiCard(label: 'Routes', value: '', icon: Icons.route_rounded, accent: AppColors.primaryContainer),
           ],
         ),
@@ -534,7 +534,7 @@ class _CampaignsSection extends StatelessWidget {
             pct: data.budgetUtilization,
             detail:
                 ' / ',
-            color: const Color(0xFF7B5800),
+            color: AppColors.tertiary,
           ),
         ],
       ),
