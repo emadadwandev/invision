@@ -24,6 +24,10 @@ class StorePolicy
             UserRole::SuperAdmin,
             UserRole::Administrator,
             UserRole::AccountManager,
+            UserRole::FieldForce,
+            UserRole::SalesRepresentative,
+            UserRole::Promoter,
+            UserRole::Merchandiser,
         );
     }
 

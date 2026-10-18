@@ -31,16 +31,14 @@ class FieldForceHomePage extends ConsumerWidget {
     return Scaffold(
       body: IndexedStack(
         index: selectedTab,
-        children: const [
-          _TodayTab(),
-          _NotificationsTab(),
-          _ProfileTab(),
-        ],
+        children: const [_TodayTab(), _NotificationsTab(), _ProfileTab()],
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.surfaceContainerLowest,
-          border: Border(top: BorderSide(color: AppColors.outlineVariant, width: 0.5)),
+          border: Border(
+            top: BorderSide(color: AppColors.outlineVariant, width: 0.5),
+          ),
         ),
         child: NavigationBar(
           selectedIndex: selectedTab,
@@ -115,6 +113,12 @@ class _TodayTab extends ConsumerWidget {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Add store',
+            icon: const Icon(Icons.add_business_outlined),
+            color: AppColors.onSurface,
+            onPressed: () => context.push('/stores/create'),
+          ),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -201,14 +205,19 @@ class _DutyCard extends ConsumerWidget {
               Text(
                 isActive ? 'On Duty' : 'Off Duty',
                 style: tt.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isActive ? AppColors.secondary : AppColors.onSurfaceVariant,
-                    ),
+                  fontWeight: FontWeight.w700,
+                  color: isActive
+                      ? AppColors.secondary
+                      : AppColors.onSurfaceVariant,
+                ),
               ),
               const Spacer(),
               if (isActive && trackingState.lastPosition != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryContainer,
                     borderRadius: BorderRadius.circular(100),
@@ -216,7 +225,11 @@ class _DutyCard extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.gps_fixed, size: 12, color: AppColors.onSecondaryContainer),
+                      const Icon(
+                        Icons.gps_fixed,
+                        size: 12,
+                        color: AppColors.onSecondaryContainer,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         trackingState.lastPosition!.speed > 0
@@ -233,61 +246,68 @@ class _DutyCard extends ConsumerWidget {
             ],
           ),
           if (trackingState.error != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                trackingState.error!,
-                style: const TextStyle(color: AppColors.error, fontSize: 12),
-              ),
-            ],
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  final controller =
-                      ref.read(gpsTrackingControllerProvider.notifier);
-                  if (isActive) {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('End Duty?'),
-                        content: const Text(
-                          'GPS tracking will stop and your duty session will be recorded.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.error,
-                            ),
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('End Duty'),
-                          ),
-                        ],
+            const SizedBox(height: 8),
+            Text(
+              trackingState.error!,
+              style: const TextStyle(color: AppColors.error, fontSize: 12),
+            ),
+          ],
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () async {
+                final controller = ref.read(
+                  gpsTrackingControllerProvider.notifier,
+                );
+                if (isActive) {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('End Duty?'),
+                      content: const Text(
+                        'GPS tracking will stop and your duty session will be recorded.',
                       ),
-                    );
-                    if (confirm == true) await controller.endDuty();
-                  } else {
-                    await controller.startDuty();
-                  }
-                },
-                icon: Icon(isActive ? Icons.stop_circle_outlined : Icons.play_circle_outline),
-                label: Text(isActive ? 'End Duty' : 'Start Duty'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: isActive ? AppColors.error : AppColors.secondary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.error,
+                          ),
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('End Duty'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) await controller.endDuty();
+                } else {
+                  await controller.startDuty();
+                }
+              },
+              icon: Icon(
+                isActive
+                    ? Icons.stop_circle_outlined
+                    : Icons.play_circle_outline,
+              ),
+              label: Text(isActive ? 'End Duty' : 'Start Duty'),
+              style: FilledButton.styleFrom(
+                backgroundColor: isActive
+                    ? AppColors.error
+                    : AppColors.secondary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -320,15 +340,18 @@ class _TodayRouteSection extends ConsumerWidget {
                     color: AppColors.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.route_rounded, size: 32, color: AppColors.outline),
+                  child: const Icon(
+                    Icons.route_rounded,
+                    size: 32,
+                    color: AppColors.outline,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'No route assigned for today',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(color: AppColors.onSurfaceVariant),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -349,8 +372,10 @@ class _TodayRouteSection extends ConsumerWidget {
           color: AppColors.errorContainer,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text('Error loading route: $e',
-            style: const TextStyle(color: AppColors.error)),
+        child: Text(
+          'Error loading route: $e',
+          style: const TextStyle(color: AppColors.error),
+        ),
       ),
     );
   }
@@ -380,9 +405,9 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start route: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to start route: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -392,30 +417,51 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
   Future<void> _checkIn(StoreVisit visit) async {
     setState(() => _loading = true);
     try {
+      final expectedQrCode = visit.store?.qrCode;
+      if (expectedQrCode == null || expectedQrCode.trim().isEmpty) {
+        throw Exception(
+          'This store has no QR code configured. Contact your manager.',
+        );
+      }
+      final qrCode = await context.push<String>('/scanner');
+      if (!mounted || qrCode == null) return;
+      if (qrCode.trim() != expectedQrCode.trim()) {
+        throw Exception('The scanned QR code does not match this store.');
+      }
+
       final locationService = ref.read(locationServiceProvider);
       final position = await locationService.getCurrentPosition();
 
       if (position == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('GPS unavailable. Please enable location services and try again.')),
+            const SnackBar(
+              content: Text(
+                'GPS unavailable. Please enable location services and try again.',
+              ),
+            ),
           );
         }
         return;
       }
 
       final repo = ref.read(routeRepositoryProvider);
-      await repo.checkIn(
+      final checkedVisit = await repo.checkIn(
         visit.id,
         latitude: position.latitude,
         longitude: position.longitude,
+        qrCode: qrCode.trim(),
       );
+      ref.invalidate(myRouteTodayProvider);
+      if (!mounted) return;
+      await context.push('/visits/${checkedVisit.id}/capture');
+      if (!mounted) return;
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-in failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Check-in failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -431,7 +477,11 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
       if (position == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('GPS unavailable. Please enable location services and try again.')),
+            const SnackBar(
+              content: Text(
+                'GPS unavailable. Please enable location services and try again.',
+              ),
+            ),
           );
         }
         return;
@@ -446,9 +496,9 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-out failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Check-out failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -493,9 +543,9 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Skip failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Skip failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -512,14 +562,21 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
       return;
     }
     final uri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving',
+    );
     launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
   Widget build(BuildContext context) {
     final instance = widget.instance;
-    final theme = Theme.of(context);
+    final activeVisits = instance.visits
+        .where(
+          (visit) =>
+              visit.status == VisitStatus.pending ||
+              visit.status == VisitStatus.checkedIn,
+        )
+        .toList();
     final notStarted = instance.status == RouteStatus.published;
 
     return Column(
@@ -539,9 +596,12 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
                 children: [
                   Expanded(
                     child: Text(
-                      instance.routePlanName ?? 'Route #${instance.routePlanId}',
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700, color: AppColors.onSurface),
+                      instance.routePlanName ??
+                          'Route #${instance.routePlanId}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.onSurface,
+                      ),
                     ),
                   ),
                   _StatusBadge(status: instance.status),
@@ -553,7 +613,9 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
                 child: LinearProgressIndicator(
                   value: instance.completionPercentage / 100,
                   backgroundColor: AppColors.surfaceContainerHigh,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.primary,
+                  ),
                   minHeight: 7,
                 ),
               ),
@@ -563,13 +625,17 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
                 children: [
                   Text(
                     '${instance.completedVisits} of ${instance.totalVisits} visits',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: AppColors.onSurfaceVariant),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                   Text(
                     '${instance.completionPercentage.toStringAsFixed(0)}%',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.primary, fontWeight: FontWeight.w700, letterSpacing: 0),
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ],
               ),
@@ -584,7 +650,9 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Icon(Icons.play_arrow_rounded),
                     label: const Text('Start Route'),
@@ -598,23 +666,58 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
         const SizedBox(height: 8),
 
         // Store visits
-        if (instance.visits.isNotEmpty) ...[
+        if (instance.visits.isNotEmpty && activeVisits.isEmpty) ...[
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.secondaryContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: AppColors.secondary,
+                ),
+                SizedBox(width: 10),
+                Expanded(child: Text('No remaining stores on today’s route.')),
+              ],
+            ),
+          ),
+        ],
+        if (activeVisits.isNotEmpty) ...[
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               'Store Visits',
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700, color: AppColors.onSurface),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.onSurface,
+              ),
             ),
           ),
-          ...instance.visits.map(
+          ...activeVisits.map(
             (visit) => _StoreVisitCard(
               visit: visit,
               index: visit.visitOrder,
               onCheckIn: _loading ? null : () => _checkIn(visit),
               onCheckOut: _loading ? null : () => _checkOut(visit),
               onSkip: _loading ? null : () => _skipVisit(visit),
+              onCapture: _loading
+                  ? null
+                  : () => context.push('/visits/${visit.id}/capture'),
+              onPos: _loading
+                  ? null
+                  : () => context.push(
+                      '/pos/create/${visit.storeId}',
+                      extra: {
+                        'storeName':
+                            visit.store?.name ?? 'Store #${visit.storeId}',
+                      },
+                    ),
               onNavigate: () => _navigateToStore(visit),
               onOpenStore: () => context.push('/stores/${visit.storeId}'),
             ),
@@ -638,6 +741,8 @@ class _StoreVisitCard extends StatelessWidget {
     this.onCheckIn,
     this.onCheckOut,
     this.onSkip,
+    this.onCapture,
+    this.onPos,
   });
 
   final StoreVisit visit;
@@ -645,6 +750,8 @@ class _StoreVisitCard extends StatelessWidget {
   final VoidCallback? onCheckIn;
   final VoidCallback? onCheckOut;
   final VoidCallback? onSkip;
+  final VoidCallback? onCapture;
+  final VoidCallback? onPos;
   final VoidCallback onNavigate;
   final VoidCallback onOpenStore;
 
@@ -660,8 +767,8 @@ class _StoreVisitCard extends StatelessWidget {
     final borderColor = isCompleted
         ? AppColors.secondary
         : isCheckedIn
-            ? AppColors.primaryContainer
-            : AppColors.outlineVariant;
+        ? AppColors.primaryContainer
+        : AppColors.outlineVariant;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -686,22 +793,31 @@ class _StoreVisitCard extends StatelessWidget {
                   color: isCompleted
                       ? AppColors.secondary
                       : isSkipped
-                          ? AppColors.outline
-                          : AppColors.primary,
+                      ? AppColors.outline
+                      : AppColors.primary,
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
                 child: isCompleted
-                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                    ? const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      )
                     : isSkipped
-                        ? const Icon(Icons.skip_next_rounded, color: Colors.white, size: 18)
-                        : Text(
-                            '$index',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14),
-                          ),
+                    ? const Icon(
+                        Icons.skip_next_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      )
+                    : Text(
+                        '$index',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -723,7 +839,9 @@ class _StoreVisitCard extends StatelessWidget {
                     if (store?.address != null)
                       Text(
                         store!.address!,
-                        style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+                        style: tt.bodySmall?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -739,95 +857,117 @@ class _StoreVisitCard extends StatelessWidget {
             ],
           ),
 
-            // Check-in/out times
-            if (visit.checkedInAt != null || visit.checkedOutAt != null) ...[
-              const SizedBox(height: 8),
-              const Divider(height: 1),
-              const SizedBox(height: 6),
-              if (visit.checkedInAt != null)
-                _TimeRow(
-                  icon: Icons.login,
-                  label: 'Checked In',
-                  time: visit.checkedInAt!,
-                  color: AppColors.primaryContainer,
-                ),
-              if (visit.checkedOutAt != null)
-                _TimeRow(
-                  icon: Icons.logout,
-                  label: 'Checked Out',
-                  time: visit.checkedOutAt!,
-                  color: AppColors.secondary,
-                ),
-              if (visit.durationMinutes != null)
-                _TimeRow(
-                  icon: Icons.timer_outlined,
-                  label: 'Duration',
-                  time: '${visit.durationMinutes} min',
-                  color: AppColors.tertiary,
-                ),
-            ],
-
-            if (isSkipped && visit.skipReason != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                'Reason: ${visit.skipReason}',
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.onSurfaceVariant, fontStyle: FontStyle.italic),
+          // Check-in/out times
+          if (visit.checkedInAt != null || visit.checkedOutAt != null) ...[
+            const SizedBox(height: 8),
+            const Divider(height: 1),
+            const SizedBox(height: 6),
+            if (visit.checkedInAt != null)
+              _TimeRow(
+                icon: Icons.login,
+                label: 'Checked In',
+                time: visit.checkedInAt!,
+                color: AppColors.primaryContainer,
               ),
-            ],
-
-            // Action buttons
-            if (!isCompleted && !isSkipped) ...[
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
-                children: [
-                  // Navigate to store (always available)
-                  if (store?.gpsLatitude != null)
-                    _ActionButton(
-                      icon: Icons.navigation_outlined,
-                      label: 'Navigate',
-                      color: AppColors.primary,
-                      onPressed: onNavigate,
-                    ),
-                  // Check-in (only when pending, route in progress)
-                  if (isPending)
-                    _ActionButton(
-                      icon: Icons.login,
-                      label: 'Check In',
-                      color: AppColors.primaryContainer,
-                      onPressed: onCheckIn,
-                    ),
-                  // Check-out (only when checked-in)
-                  if (isCheckedIn) ...[
-                    _ActionButton(
-                      icon: Icons.logout,
-                      label: 'Check Out',
-                      color: AppColors.secondary,
-                      onPressed: onCheckOut,
-                    ),
-                    _ActionButton(
-                      icon: Icons.point_of_sale,
-                      label: 'Create Order',
-                      color: AppColors.tertiary,
-                      onPressed: () => context.push('/sales/create'),
-                    ),
-                  ],
-                  // Skip (only when pending)
-                  if (isPending)
-                    _ActionButton(
-                      icon: Icons.skip_next,
-                      label: 'Skip',
-                      color: AppColors.outline,
-                      onPressed: onSkip,
-                    ),
-                ],
+            if (visit.checkedOutAt != null)
+              _TimeRow(
+                icon: Icons.logout,
+                label: 'Checked Out',
+                time: visit.checkedOutAt!,
+                color: AppColors.secondary,
               ),
-            ],
+            if (visit.durationMinutes != null)
+              _TimeRow(
+                icon: Icons.timer_outlined,
+                label: 'Duration',
+                time: '${visit.durationMinutes} min',
+                color: AppColors.tertiary,
+              ),
           ],
-        ),
-      );
+
+          if (isSkipped && visit.skipReason != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Reason: ${visit.skipReason}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+
+          // Action buttons
+          if (!isCompleted && !isSkipped) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                // Navigate to store (always available)
+                if (store?.gpsLatitude != null)
+                  _ActionButton(
+                    icon: Icons.navigation_outlined,
+                    label: 'Navigate',
+                    color: AppColors.primary,
+                    onPressed: onNavigate,
+                  ),
+                // Check-in (only when pending, route in progress)
+                if (isPending)
+                  _ActionButton(
+                    icon: Icons.login,
+                    label: 'Check In',
+                    color: AppColors.primaryContainer,
+                    onPressed: onCheckIn,
+                  ),
+                // Check-out (only when checked-in)
+                if (isCheckedIn) ...[
+                  _ActionButton(
+                    icon: Icons.fact_check_outlined,
+                    label: 'Visit Data',
+                    color: AppColors.primary,
+                    onPressed: onCapture,
+                  ),
+                  _ActionButton(
+                    icon: Icons.point_of_sale,
+                    label: 'POS Sale',
+                    color: AppColors.tertiary,
+                    onPressed: onPos,
+                  ),
+                  _ActionButton(
+                    icon: Icons.logout,
+                    label: 'Check Out',
+                    color: AppColors.secondary,
+                    onPressed: onCheckOut,
+                  ),
+                  _ActionButton(
+                    icon: Icons.point_of_sale,
+                    label: 'Create Order',
+                    color: AppColors.tertiary,
+                    onPressed: () => context.push(
+                      '/sales/create',
+                      extra: {
+                        'storeId': visit.storeId,
+                        'storeName':
+                            visit.store?.name ?? 'Store #${visit.storeId}',
+                      },
+                    ),
+                  ),
+                ],
+                // Skip (only when pending)
+                if (isPending)
+                  _ActionButton(
+                    icon: Icons.skip_next,
+                    label: 'Skip',
+                    color: AppColors.outline,
+                    onPressed: onSkip,
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 
@@ -871,15 +1011,19 @@ class _NotificationsTab extends ConsumerWidget {
                         color: AppColors.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(Icons.notifications_none_rounded,
-                          size: 32, color: AppColors.outline),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        size: 32,
+                        color: AppColors.outline,
+                      ),
                     ),
                     const SizedBox(height: 12),
-                    Text('No notifications',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(color: AppColors.onSurfaceVariant)),
+                    Text(
+                      'No notifications',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -905,12 +1049,16 @@ class _NotificationsTab extends ConsumerWidget {
                             ? null
                             : const Border(
                                 left: BorderSide(
-                                    color: AppColors.primaryContainer,
-                                    width: 3)),
+                                  color: AppColors.primaryContainer,
+                                  width: 3,
+                                ),
+                              ),
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 4),
+                          horizontal: 14,
+                          vertical: 4,
+                        ),
                         leading: Container(
                           width: 36,
                           height: 36,
@@ -920,19 +1068,34 @@ class _NotificationsTab extends ConsumerWidget {
                                 : AppColors.primaryContainer.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(n.type.icon, size: 18,
-                              color: n.isRead ? AppColors.outline : AppColors.primaryContainer),
+                          child: Icon(
+                            n.type.icon,
+                            size: 18,
+                            color: n.isRead
+                                ? AppColors.outline
+                                : AppColors.primaryContainer,
+                          ),
                         ),
-                        title: Text(n.title,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700,
-                                color: AppColors.onSurface)),
+                        title: Text(
+                          n.title,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: n.isRead
+                                    ? FontWeight.w500
+                                    : FontWeight.w700,
+                                color: AppColors.onSurface,
+                              ),
+                        ),
                         subtitle: n.body != null
-                            ? Text(n.body!,
+                            ? Text(
+                                n.body!,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.onSurfaceVariant))
+                                    ?.copyWith(
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
+                              )
                             : null,
                         trailing: !n.isRead
                             ? Container(
@@ -946,7 +1109,9 @@ class _NotificationsTab extends ConsumerWidget {
                             : null,
                         onTap: () async {
                           if (!n.isRead) {
-                            final repo = ref.read(notificationsRepositoryProvider);
+                            final repo = ref.read(
+                              notificationsRepositoryProvider,
+                            );
                             await repo.markAllRead();
                             ref.invalidate(myNotificationsProvider);
                             ref.invalidate(unreadNotificationCountProvider);
@@ -957,7 +1122,9 @@ class _NotificationsTab extends ConsumerWidget {
                   },
                 ),
               ),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -982,7 +1149,10 @@ class _ProfileTab extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface.withOpacity(0.9),
         elevation: 0,
-        title: Text('Profile', style: tt.titleLarge?.copyWith(color: AppColors.onSurface)),
+        title: Text(
+          'Profile',
+          style: tt.titleLarge?.copyWith(color: AppColors.onSurface),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -1001,14 +1171,19 @@ class _ProfileTab extends ConsumerWidget {
                   height: 72,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryContainer]),
+                      colors: [AppColors.primary, AppColors.primaryContainer],
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     _initials(user?.name ?? ''),
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, fontFamily: 'Manrope'),
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'Manrope',
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -1019,19 +1194,26 @@ class _ProfileTab extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? '',
-                  style: tt.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
+                  style: tt.bodyMedium?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
                 if (user?.role != null) ...[
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.secondaryContainer,
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
                       _roleLabel(user!.role!),
-                      style: tt.labelMedium?.copyWith(color: AppColors.onSecondaryContainer),
+                      style: tt.labelMedium?.copyWith(
+                        color: AppColors.onSecondaryContainer,
+                      ),
                     ),
                   ),
                 ],
@@ -1048,7 +1230,10 @@ class _ProfileTab extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
               leading: Container(
                 width: 36,
                 height: 36,
@@ -1074,7 +1259,9 @@ class _ProfileTab extends ConsumerWidget {
                 trackingState.isDutyActive
                     ? 'GPS tracking is active'
                     : 'Start duty on the Today tab',
-                style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+                style: tt.bodySmall?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -1089,13 +1276,41 @@ class _ProfileTab extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                _ProfileTile(icon: Icons.language_rounded, label: 'Language', onTap: () => context.push('/language')),
-                Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1, indent: 54),
-                _ProfileTile(icon: Icons.sync_rounded, label: 'Sync Status', onTap: () => context.push('/sync')),
-                Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1, indent: 54),
-                _ProfileTile(icon: Icons.checklist_rounded, label: 'My Assigned Tasks', onTap: () => context.push('/assigned-tasks')),
-                Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1, indent: 54),
-                _ProfileTile(icon: Icons.receipt_long_rounded, label: 'My Orders', onTap: () => context.push('/my-orders')),
+                _ProfileTile(
+                  icon: Icons.language_rounded,
+                  label: 'Language',
+                  onTap: () => context.push('/language'),
+                ),
+                Divider(
+                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  height: 1,
+                  indent: 54,
+                ),
+                _ProfileTile(
+                  icon: Icons.sync_rounded,
+                  label: 'Sync Status',
+                  onTap: () => context.push('/sync'),
+                ),
+                Divider(
+                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  height: 1,
+                  indent: 54,
+                ),
+                _ProfileTile(
+                  icon: Icons.checklist_rounded,
+                  label: 'My Assigned Tasks',
+                  onTap: () => context.push('/assigned-tasks'),
+                ),
+                Divider(
+                  color: AppColors.outlineVariant.withOpacity(0.5),
+                  height: 1,
+                  indent: 54,
+                ),
+                _ProfileTile(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'My Orders',
+                  onTap: () => context.push('/my-orders'),
+                ),
               ],
             ),
           ),
@@ -1116,7 +1331,9 @@ class _ProfileTab extends ConsumerWidget {
                       child: const Text('Cancel'),
                     ),
                     FilledButton(
-                      style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                      ),
                       onPressed: () => Navigator.pop(ctx, true),
                       child: const Text('Logout'),
                     ),
@@ -1139,10 +1356,18 @@ class _ProfileTab extends ConsumerWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.logout_rounded, color: AppColors.onErrorContainer, size: 18),
+                  const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.onErrorContainer,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
-                  Text('Logout',
-                      style: tt.labelLarge?.copyWith(color: AppColors.onErrorContainer)),
+                  Text(
+                    'Logout',
+                    style: tt.labelLarge?.copyWith(
+                      color: AppColors.onErrorContainer,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1185,9 +1410,18 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, bg) = switch (status) {
-      RouteStatus.inProgress => (AppColors.primaryContainer, AppColors.primaryContainer.withOpacity(0.15)),
-      RouteStatus.completed => (AppColors.secondary, AppColors.secondaryContainer),
-      RouteStatus.published => (AppColors.tertiary, AppColors.tertiaryContainer.withOpacity(0.25)),
+      RouteStatus.inProgress => (
+        AppColors.primaryContainer,
+        AppColors.primaryContainer.withOpacity(0.15),
+      ),
+      RouteStatus.completed => (
+        AppColors.secondary,
+        AppColors.secondaryContainer,
+      ),
+      RouteStatus.published => (
+        AppColors.tertiary,
+        AppColors.tertiaryContainer.withOpacity(0.25),
+      ),
       RouteStatus.cancelled => (AppColors.error, AppColors.errorContainer),
       _ => (AppColors.onSurfaceVariant, AppColors.surfaceContainerHigh),
     };
@@ -1200,14 +1434,21 @@ class _StatusBadge extends StatelessWidget {
       child: Text(
         status.label,
         style: TextStyle(
-            color: color, fontSize: 11, fontWeight: FontWeight.w700),
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
 }
 
 class _ProfileTile extends StatelessWidget {
-  const _ProfileTile({required this.icon, required this.label, required this.onTap});
+  const _ProfileTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -1225,13 +1466,18 @@ class _ProfileTile extends StatelessWidget {
         ),
         child: Icon(icon, color: AppColors.onSurfaceVariant, size: 18),
       ),
-      title: Text(label,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right_rounded,
-          color: AppColors.outline, size: 18),
+      title: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.onSurface,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: AppColors.outline,
+        size: 18,
+      ),
       onTap: onTap,
     );
   }
@@ -1245,22 +1491,46 @@ class _VisitStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, bg, icon) = switch (status) {
-      VisitStatus.pending => (AppColors.onSurfaceVariant, AppColors.surfaceContainerHigh, Icons.circle_outlined),
-      VisitStatus.checkedIn => (AppColors.primaryContainer, AppColors.primaryContainer.withOpacity(0.15), Icons.login_rounded),
-      VisitStatus.completed => (AppColors.secondary, AppColors.secondaryContainer, Icons.check_circle_rounded),
-      VisitStatus.skipped => (AppColors.error, AppColors.errorContainer, Icons.skip_next_rounded),
+      VisitStatus.pending => (
+        AppColors.onSurfaceVariant,
+        AppColors.surfaceContainerHigh,
+        Icons.circle_outlined,
+      ),
+      VisitStatus.checkedIn => (
+        AppColors.primaryContainer,
+        AppColors.primaryContainer.withOpacity(0.15),
+        Icons.login_rounded,
+      ),
+      VisitStatus.completed => (
+        AppColors.secondary,
+        AppColors.secondaryContainer,
+        Icons.check_circle_rounded,
+      ),
+      VisitStatus.skipped => (
+        AppColors.error,
+        AppColors.errorContainer,
+        Icons.skip_next_rounded,
+      ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(100),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 3),
-          Text(status.label,
-              style: TextStyle(
-                  color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+          Text(
+            status.label,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -1296,9 +1566,15 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: color),
             const SizedBox(width: 5),
-            Text(label,
-                style: TextStyle(
-                    color: color, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Inter')),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Inter',
+              ),
+            ),
           ],
         ),
       ),
@@ -1335,11 +1611,21 @@ class _TimeRow extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
-          Text('$label: ',
-              style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-          Text(displayTime,
-              style: TextStyle(
-                  fontSize: 12, color: color, fontWeight: FontWeight.w500)),
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            displayTime,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );

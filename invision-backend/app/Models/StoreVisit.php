@@ -6,6 +6,7 @@ use App\Enums\VisitStatus;
 use App\Models\Concerns\HasTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StoreVisit extends Model
 {
@@ -60,6 +61,11 @@ class StoreVisit extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function metrics(): HasMany
+    {
+        return $this->hasMany(StoreVisitMetric::class);
     }
 
     /**

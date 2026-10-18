@@ -16,7 +16,7 @@ class CheckInRequest extends FormRequest
         return [
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'qr_code' => ['nullable', 'string', 'max:255'],
+            'qr_code' => ['required', 'string', 'max:255'],
         ];
     }
 }

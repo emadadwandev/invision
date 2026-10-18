@@ -2,7 +2,10 @@ class AppConstants {
   const AppConstants._();
 
   static const String appName = 'Invision Mobile';
-  static const String apiBaseUrl = 'http://192.168.1.32:8000/api/v1';
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://invision-me.com/api/v1',
+  );
 }
 
 class ApiEndpoints {
@@ -47,6 +50,7 @@ class ApiEndpoints {
 
   // Store Visits
   static String visitCheckIn(int id) => '/visits/$id/check-in';
+  static String visitCapture(int id) => '/visits/$id/capture';
   static String visitCheckOut(int id) => '/visits/$id/check-out';
   static String visitSkip(int id) => '/visits/$id/skip';
 

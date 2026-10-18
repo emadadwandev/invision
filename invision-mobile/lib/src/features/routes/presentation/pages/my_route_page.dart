@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/enums/route_status.dart';
 import '../../../gps_tracking/presentation/providers/gps_tracking_providers.dart';
@@ -18,10 +19,15 @@ class MyRoutePage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text("Today's Route",
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        title: Text(
+          "Today's Route",
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface),
+        ),
         backgroundColor: AppColors.surface.withOpacity(0.9),
-        elevation: 0, scrolledUnderElevation: 0,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: todayAsync.when(
         data: (instance) => instance == null
@@ -30,22 +36,32 @@ class MyRoutePage extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 72, height: 72,
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
                         color: AppColors.surfaceContainerHigh,
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: const Icon(Icons.route_rounded, size: 36, color: AppColors.outline),
+                      child: const Icon(
+                        Icons.route_rounded,
+                        size: 36,
+                        color: AppColors.outline,
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    Text('No route assigned for today.',
-                        style: Theme.of(context).textTheme.bodyLarge
-                            ?.copyWith(color: AppColors.onSurfaceVariant)),
+                    Text(
+                      'No route assigned for today.',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               )
             : _MyRouteBody(instance: instance),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
@@ -72,9 +88,9 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start route: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to start route: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -84,30 +100,51 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
   Future<void> _checkIn(StoreVisit visit) async {
     setState(() => _loading = true);
     try {
+      final expectedQrCode = visit.store?.qrCode;
+      if (expectedQrCode == null || expectedQrCode.trim().isEmpty) {
+        throw Exception(
+          'This store has no QR code configured. Contact your manager.',
+        );
+      }
+      final qrCode = await context.push<String>('/scanner');
+      if (!mounted || qrCode == null) return;
+      if (qrCode.trim() != expectedQrCode.trim()) {
+        throw Exception('The scanned QR code does not match this store.');
+      }
+
       final locationService = ref.read(locationServiceProvider);
       final position = await locationService.getCurrentPosition();
 
       if (position == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('GPS unavailable. Please enable location services and try again.')),
+            const SnackBar(
+              content: Text(
+                'GPS unavailable. Please enable location services and try again.',
+              ),
+            ),
           );
         }
         return;
       }
 
       final repo = ref.read(routeRepositoryProvider);
-      await repo.checkIn(
+      final checkedVisit = await repo.checkIn(
         visit.id,
         latitude: position.latitude,
         longitude: position.longitude,
+        qrCode: qrCode.trim(),
       );
+      ref.invalidate(myRouteTodayProvider);
+      if (!mounted) return;
+      await context.push('/visits/${checkedVisit.id}/capture');
+      if (!mounted) return;
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-in failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Check-in failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -123,7 +160,11 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
       if (position == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('GPS unavailable. Please enable location services and try again.')),
+            const SnackBar(
+              content: Text(
+                'GPS unavailable. Please enable location services and try again.',
+              ),
+            ),
           );
         }
         return;
@@ -138,9 +179,9 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Check-out failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Check-out failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -184,9 +225,9 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
       ref.invalidate(myRouteTodayProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Skip failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Skip failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -196,6 +237,13 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
   @override
   Widget build(BuildContext context) {
     final instance = widget.instance;
+    final activeVisits = instance.visits
+        .where(
+          (visit) =>
+              visit.status == VisitStatus.pending ||
+              visit.status == VisitStatus.checkedIn,
+        )
+        .toList();
     final tt = Theme.of(context).textTheme;
     final isNotStarted = instance.status == RouteStatus.published;
 
@@ -210,7 +258,8 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryContainer],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -226,57 +275,94 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
                     children: [
                       _StatChip(
                         label: 'Progress',
-                        value: '${instance.completionPercentage.toStringAsFixed(0)}%',
+                        value:
+                            '${instance.completionPercentage.toStringAsFixed(0)}%',
                       ),
                       const SizedBox(width: 8),
                       _StatChip(
                         label: 'Visits',
-                        value: '${instance.completedVisits}/${instance.totalVisits}',
+                        value:
+                            '${instance.completedVisits}/${instance.totalVisits}',
                       ),
-                      if (instance.totalDistanceKm != null) ...[const SizedBox(width: 8),
+                      if (instance.totalDistanceKm != null) ...[
+                        const SizedBox(width: 8),
                         _StatChip(
                           label: 'Distance',
-                          value: '${instance.totalDistanceKm!.toStringAsFixed(1)} km',
-                        )],
+                          value:
+                              '${instance.totalDistanceKm!.toStringAsFixed(1)} km',
+                        ),
+                      ],
                     ],
                   ),
-                  if (isNotStarted) ...[const SizedBox(height: 14),
+                  if (isNotStarted) ...[
+                    const SizedBox(height: 14),
                     GestureDetector(
                       onTap: _loading ? null : _startRoute,
                       child: Container(
-                        width: double.infinity, height: 44,
+                        width: double.infinity,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withOpacity(0.5)),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.5),
+                          ),
                         ),
                         alignment: Alignment.center,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                             SizedBox(width: 6),
-                            Text('Start Route',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                            Text(
+                              'Start Route',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    )],
+                    ),
+                  ],
                 ],
               ),
             ),
             const SizedBox(height: 14),
 
             // Visits List
-            Text('Store Visits',
-                style: tt.titleMedium?.copyWith(color: AppColors.onSurface)),
+            Text(
+              'Store Visits',
+              style: tt.titleMedium?.copyWith(color: AppColors.onSurface),
+            ),
             const SizedBox(height: 10),
-            ...instance.visits.map(
+            if (activeVisits.isEmpty && instance.visits.isNotEmpty)
+              const _RouteCompleteNotice(),
+            ...activeVisits.map(
               (visit) => _VisitCard(
                 visit: visit,
                 onCheckIn: () => _checkIn(visit),
                 onCheckOut: () => _checkOut(visit),
                 onSkip: () => _skipVisit(visit),
+                onCapture: () => context.push('/visits/${visit.id}/capture'),
+                onPos: () => context.push(
+                  '/pos/create/${visit.storeId}',
+                  extra: {
+                    'storeName': visit.store?.name ?? 'Store #${visit.storeId}',
+                  },
+                ),
+                onCreateOrder: () => context.push(
+                  '/sales/create',
+                  extra: {
+                    'storeId': visit.storeId,
+                    'storeName': visit.store?.name ?? 'Store #${visit.storeId}',
+                  },
+                ),
                 loading: _loading,
               ),
             ),
@@ -286,12 +372,34 @@ class _MyRouteBodyState extends ConsumerState<_MyRouteBody> {
           const Positioned.fill(
             child: ColoredBox(
               color: Color(0x44000000),
-              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
             ),
           ),
       ],
     );
   }
+}
+
+class _RouteCompleteNotice extends StatelessWidget {
+  const _RouteCompleteNotice();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.secondaryContainer,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: const Row(
+      children: [
+        Icon(Icons.check_circle_outline_rounded, color: AppColors.secondary),
+        SizedBox(width: 10),
+        Expanded(child: Text('No remaining stores on today’s route.')),
+      ],
+    ),
+  );
 }
 
 class _StatChip extends StatelessWidget {
@@ -311,11 +419,19 @@ class _StatChip extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          ),
         ],
       ),
     );
@@ -328,6 +444,9 @@ class _VisitCard extends StatelessWidget {
     required this.onCheckIn,
     required this.onCheckOut,
     required this.onSkip,
+    required this.onCapture,
+    required this.onPos,
+    required this.onCreateOrder,
     required this.loading,
   });
 
@@ -335,6 +454,9 @@ class _VisitCard extends StatelessWidget {
   final VoidCallback onCheckIn;
   final VoidCallback onCheckOut;
   final VoidCallback onSkip;
+  final VoidCallback onCapture;
+  final VoidCallback onPos;
+  final VoidCallback onCreateOrder;
   final bool loading;
 
   Color _statusColor(VisitStatus status) {
@@ -374,23 +496,30 @@ class _VisitCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 28, height: 28,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   color: _statusBg(visit.status),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,
-                child: Text('${visit.visitOrder}',
-                    style: TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700,
-                        color: _statusColor(visit.status))),
+                child: Text(
+                  '${visit.visitOrder}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _statusColor(visit.status),
+                  ),
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   visit.store?.name ?? 'Store #${visit.storeId}',
                   style: tt.titleSmall?.copyWith(
-                      color: AppColors.onSurface, fontWeight: FontWeight.w700),
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               Container(
@@ -399,10 +528,14 @@ class _VisitCard extends StatelessWidget {
                   color: _statusBg(visit.status),
                   borderRadius: BorderRadius.circular(100),
                 ),
-                child: Text(visit.status.name.toUpperCase(),
-                    style: TextStyle(
-                        color: _statusColor(visit.status),
-                        fontSize: 9, fontWeight: FontWeight.w700)),
+                child: Text(
+                  visit.status.name.toUpperCase(),
+                  style: TextStyle(
+                    color: _statusColor(visit.status),
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
@@ -411,7 +544,9 @@ class _VisitCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4, left: 38),
               child: Text(
                 'Duration: ${visit.durationMinutes} min',
-                style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+                style: tt.bodySmall?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ),
           if (visit.skipReason != null)
@@ -429,43 +564,142 @@ class _VisitCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 10, left: 38),
               child: Row(
                 children: [
-                  if (visit.status == VisitStatus.pending) ...[GestureDetector(
-                    onTap: loading ? null : onCheckIn,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text('Check In',
-                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: loading ? null : onSkip,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.errorContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text('Skip',
-                          style: TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.w700)),
-                    ),
-                  )],
-                  if (visit.status == VisitStatus.checkedIn)
+                  if (visit.status == VisitStatus.pending) ...[
                     GestureDetector(
-                      onTap: loading ? null : onCheckOut,
+                      onTap: loading ? null : onCheckIn,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary,
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('Check Out',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                        child: const Text(
+                          'Check In',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: loading ? null : onSkip,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (visit.status == VisitStatus.checkedIn)
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: loading ? null : onPos,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.tertiary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'POS Sale',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: loading ? null : onCapture,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Visit Data',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: loading ? null : onCreateOrder,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Create Order',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: loading ? null : onCheckOut,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Check Out',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),

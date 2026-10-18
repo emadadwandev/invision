@@ -264,43 +264,38 @@ class RouteService
     public function checkIn(StoreVisit $visit, array $data): StoreVisit
     {
         $store = $visit->store;
-        $distance = null;
+        $checkinRadiusMeters = 5;
 
-        $storeHasGps = $store->gps_latitude && $store->gps_longitude;
-        $userHasGps = isset($data['latitude'], $data['longitude']);
-
-        if ($storeHasGps && $userHasGps) {
-            $distance = GeoFenceService::calculateDistance(
-                (float) $data['latitude'],
-                (float) $data['longitude'],
-                (float) $store->gps_latitude,
-                (float) $store->gps_longitude,
+        if (! $store->qr_code || ! hash_equals((string) $store->qr_code, (string) $data['qr_code'])) {
+            throw new \App\Exceptions\GeoFenceException(
+                'The scanned QR code does not match this store.',
+                null,
+                $checkinRadiusMeters
             );
-
-            $geoFenceService = app(GeoFenceService::class);
-            $settings = $geoFenceService->getSettings();
-
-            if ($settings->enforce_geofence && $distance > $settings->checkin_radius_meters) {
-                throw new \App\Exceptions\GeoFenceException(
-                    "You are " . round($distance) . "m away from the store. Check-in requires being within {$settings->checkin_radius_meters}m.",
-                    $distance,
-                    $settings->checkin_radius_meters
-                );
-            }
-        } elseif ($storeHasGps && ! $userHasGps) {
-            // Store has GPS but user didn't send coordinates — only block if GPS is required
-            $geoFenceService = app(GeoFenceService::class);
-            $settings = $geoFenceService->getSettings();
-
-            if ($settings->require_gps_for_checkin) {
-                throw new \App\Exceptions\GeoFenceException(
-                    'GPS coordinates are required for check-in.',
-                    null,
-                    $settings->checkin_radius_meters
-                );
-            }
         }
-        // If store has no GPS coordinates, geofence cannot be enforced — allow check-in
+
+        if ($store->gps_latitude === null || $store->gps_longitude === null) {
+            throw new \App\Exceptions\GeoFenceException(
+                'This store has no GPS coordinates configured. Check-in cannot be verified.',
+                null,
+                $checkinRadiusMeters
+            );
+        }
+
+        $distance = GeoFenceService::calculateDistance(
+            (float) $data['latitude'],
+            (float) $data['longitude'],
+            (float) $store->gps_latitude,
+            (float) $store->gps_longitude,
+        );
+
+        if ($distance > $checkinRadiusMeters) {
+            throw new \App\Exceptions\GeoFenceException(
+                'You are ' . round($distance, 1) . 'm away from the store. Check-in requires being within 5m.',
+                $distance,
+                $checkinRadiusMeters
+            );
+        }
 
         $visit->update([
             'status' => VisitStatus::CheckedIn,

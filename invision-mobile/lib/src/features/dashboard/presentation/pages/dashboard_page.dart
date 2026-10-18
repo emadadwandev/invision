@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/dashboard_models.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -77,7 +78,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               ),
               actions: [
                 IconButton(
-                  onPressed: () => context.go('/login'),
+                  onPressed: () async {
+                    try {
+                      await ref.read(authProvider.notifier).logout();
+                    } catch (_) {
+                      // The local session is cleared even if the server is
+                      // temporarily unavailable.
+                    }
+                    if (context.mounted) context.go('/login');
+                  },
                   icon: const Icon(Icons.logout_rounded, size: 22),
                   color: AppColors.onSurfaceVariant,
                   tooltip: 'Logout',

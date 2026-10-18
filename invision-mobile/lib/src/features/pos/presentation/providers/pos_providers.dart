@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../products/data/models/product_model.dart';
+import '../../../products/data/repositories/product_repository.dart';
 import '../../data/models/pos_terminal_model.dart';
 import '../../data/models/pos_transaction_model.dart';
 import '../../data/models/store_inventory_model.dart';
@@ -9,6 +11,11 @@ import '../../data/repositories/pos_repository.dart';
 final posRepositoryProvider = Provider(
   (ref) => PosRepository(apiClient: ref.watch(apiClientProvider)),
 );
+
+final posProductCatalogProvider = FutureProvider.autoDispose<List<Product>>((ref) {
+  final repository = ProductRepository(apiClient: ref.watch(apiClientProvider));
+  return repository.getProducts(perPage: 1000);
+});
 
 // POS Transaction providers
 final posTransactionsProvider =

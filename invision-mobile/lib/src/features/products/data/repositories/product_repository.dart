@@ -12,8 +12,10 @@ class ProductRepository {
   Future<List<Product>> getProducts({
     String? search,
     int? categoryId,
+    int perPage = 15,
   }) async {
     final queryParams = <String, dynamic>{};
+    queryParams['per_page'] = perPage;
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
     if (categoryId != null) queryParams['category_id'] = categoryId;
 

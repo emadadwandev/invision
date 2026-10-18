@@ -8,6 +8,7 @@ class Product {
     this.description,
     this.categoryName,
     this.priceLevels = const [],
+    this.currentPrices = const [],
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -27,6 +28,11 @@ class Product {
                   (p) => PriceLevel.fromJson(p as Map<String, dynamic>))
               .toList()
           : [],
+      currentPrices: json['current_price'] != null
+          ? (json['current_price'] as List)
+              .map((p) => PriceLevel.fromJson(p as Map<String, dynamic>))
+              .toList()
+          : [],
     );
   }
 
@@ -38,6 +44,7 @@ class Product {
   final String? description;
   final String? categoryName;
   final List<PriceLevel> priceLevels;
+  final List<PriceLevel> currentPrices;
 }
 
 class PriceLevel {

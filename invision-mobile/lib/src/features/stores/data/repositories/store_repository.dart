@@ -34,4 +34,29 @@ class StoreRepository {
     final response = await _client.dio.get(ApiEndpoints.store(id));
     return Store.fromJson(response.data['data'] as Map<String, dynamic>);
   }
+
+  Future<Store> createStore({
+    required String name,
+    required String code,
+    required String qrCode,
+    required String category,
+    required double gpsLatitude,
+    required double gpsLongitude,
+    String? address,
+  }) async {
+    final response = await _client.dio.post(
+      ApiEndpoints.stores,
+      data: {
+        'name': name,
+        'code': code,
+        'qr_code': qrCode,
+        'category': category,
+        'gps_latitude': gpsLatitude,
+        'gps_longitude': gpsLongitude,
+        if (address != null && address.trim().isNotEmpty)
+          'address': address.trim(),
+      },
+    );
+    return Store.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
 }

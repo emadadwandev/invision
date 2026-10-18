@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\LocaleController;
 use App\Http\Controllers\Api\V1\MfaController;
 use App\Http\Controllers\Api\V1\TeamController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\VisitCaptureController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -108,6 +109,8 @@ Route::prefix('v1')->group(function () {
 
         // Store Visits
         Route::post('/visits/{storeVisit}/check-in', [RouteController::class, 'checkIn'])->name('api.v1.visits.check-in');
+        Route::get('/visits/{storeVisit}/capture', [VisitCaptureController::class, 'show'])->name('api.v1.visits.capture.show');
+        Route::put('/visits/{storeVisit}/capture', [VisitCaptureController::class, 'save'])->name('api.v1.visits.capture.save');
         Route::post('/visits/{storeVisit}/check-out', [RouteController::class, 'checkOut'])->name('api.v1.visits.check-out');
         Route::post('/visits/{storeVisit}/skip', [RouteController::class, 'skipVisit'])->name('api.v1.visits.skip');
 

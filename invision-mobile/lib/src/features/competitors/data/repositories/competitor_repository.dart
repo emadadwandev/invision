@@ -9,8 +9,9 @@ class CompetitorRepository {
 
   // ─── Competitors ─────────────────────────────────────────
 
-  Future<List<Competitor>> getCompetitors({String? search}) async {
+  Future<List<Competitor>> getCompetitors({String? search, int perPage = 15}) async {
     final queryParams = <String, dynamic>{};
+    queryParams['per_page'] = perPage;
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
     final response = await _client.dio

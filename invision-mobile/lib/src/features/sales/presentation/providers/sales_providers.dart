@@ -5,56 +5,47 @@ import '../../data/models/credit_account_model.dart';
 import '../../data/models/payment_model.dart';
 import '../../data/models/sales_order_model.dart';
 import '../../data/repositories/sales_repository.dart';
+import '../../../products/data/models/product_model.dart';
+import '../../../products/data/repositories/product_repository.dart';
 
 final salesRepositoryProvider = Provider(
   (ref) => SalesRepository(apiClient: ref.watch(apiClientProvider)),
 );
 
-final salesOrdersProvider =
-    FutureProvider.autoDispose.family<List<SalesOrder>, SalesOrderFilter>(
-  (ref, filter) {
-    final repo = ref.watch(salesRepositoryProvider);
-    return repo.getSalesOrders(
-      search: filter.search,
-      status: filter.status,
-    );
-  },
-);
+final orderProductsProvider = FutureProvider.autoDispose<List<Product>>((ref) {
+  final repository = ProductRepository(apiClient: ref.watch(apiClientProvider));
+  return repository.getProducts(perPage: 1000);
+});
 
-final salesOrderDetailProvider =
-    FutureProvider.autoDispose.family<SalesOrder, int>(
-  (ref, id) {
-    final repo = ref.watch(salesRepositoryProvider);
-    return repo.getSalesOrder(id);
-  },
-);
+final salesOrdersProvider = FutureProvider.autoDispose
+    .family<List<SalesOrder>, SalesOrderFilter>((ref, filter) {
+      final repo = ref.watch(salesRepositoryProvider);
+      return repo.getSalesOrders(search: filter.search, status: filter.status);
+    });
 
-final myOrdersProvider =
-    FutureProvider.autoDispose.family<List<SalesOrder>, String?>(
-  (ref, status) {
-    final repo = ref.watch(salesRepositoryProvider);
-    return repo.getMyOrders(status: status);
-  },
-);
+final salesOrderDetailProvider = FutureProvider.autoDispose
+    .family<SalesOrder, int>((ref, id) {
+      final repo = ref.watch(salesRepositoryProvider);
+      return repo.getSalesOrder(id);
+    });
 
-final paymentsProvider =
-    FutureProvider.autoDispose.family<List<Payment>, PaymentFilter>(
-  (ref, filter) {
-    final repo = ref.watch(salesRepositoryProvider);
-    return repo.getPayments(
-      status: filter.status,
-      method: filter.method,
-    );
-  },
-);
+final myOrdersProvider = FutureProvider.autoDispose
+    .family<List<SalesOrder>, String?>((ref, status) {
+      final repo = ref.watch(salesRepositoryProvider);
+      return repo.getMyOrders(status: status);
+    });
 
-final creditAccountsProvider =
-    FutureProvider.autoDispose.family<List<CreditAccount>, String?>(
-  (ref, search) {
-    final repo = ref.watch(salesRepositoryProvider);
-    return repo.getCreditAccounts(search: search);
-  },
-);
+final paymentsProvider = FutureProvider.autoDispose
+    .family<List<Payment>, PaymentFilter>((ref, filter) {
+      final repo = ref.watch(salesRepositoryProvider);
+      return repo.getPayments(status: filter.status, method: filter.method);
+    });
+
+final creditAccountsProvider = FutureProvider.autoDispose
+    .family<List<CreditAccount>, String?>((ref, search) {
+      final repo = ref.watch(salesRepositoryProvider);
+      return repo.getCreditAccounts(search: search);
+    });
 
 class SalesOrderFilter {
   const SalesOrderFilter({this.search, this.status});

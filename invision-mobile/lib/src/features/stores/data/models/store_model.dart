@@ -12,6 +12,7 @@ class Store {
     this.address,
     this.gpsLatitude,
     this.gpsLongitude,
+    this.qrCode,
     this.areaName,
     this.contacts = const [],
   });
@@ -27,6 +28,7 @@ class Store {
       address: json['address'] as String?,
       gpsLatitude: (json['gps_latitude'] as num?)?.toDouble(),
       gpsLongitude: (json['gps_longitude'] as num?)?.toDouble(),
+      qrCode: json['qr_code'] as String?,
       areaName: json['area'] != null
           ? (json['area'] as Map<String, dynamic>)['name'] as String?
           : null,
@@ -48,6 +50,7 @@ class Store {
   final String? address;
   final double? gpsLatitude;
   final double? gpsLongitude;
+  final String? qrCode;
   final String? areaName;
   final List<StoreContact> contacts;
 }

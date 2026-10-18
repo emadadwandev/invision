@@ -20,8 +20,12 @@ Flutter mobile application for the Invision SaaS Field Force and Product Trackin
 
 ## API Base URL
 
-Current Android emulator API base URL is defined in `lib/src/core/constants/app_constants.dart`:
+The app uses the published API by default: `https://invision-me.com/api/v1`.
+Override it at build or run time with `--dart-define=API_BASE_URL=...`, for
+example when targeting a local backend:
 
-- `http://10.0.2.2:8080/api/v1`
+```sh
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/api/v1
+```
 
-Adjust this value for iOS simulator or physical devices as needed.
+For a physical device, use a backend address reachable from that device.

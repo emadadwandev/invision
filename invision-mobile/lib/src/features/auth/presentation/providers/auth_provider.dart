@@ -46,8 +46,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    await _repository.logout();
-    _ref.read(apiClientProvider).clearToken();
-    state = const AuthState();
+    try {
+      await _repository.logout();
+    } finally {
+      _ref.read(apiClientProvider).clearToken();
+      state = const AuthState();
+    }
   }
 }

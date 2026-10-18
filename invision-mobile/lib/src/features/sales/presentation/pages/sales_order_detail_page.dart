@@ -38,10 +38,15 @@ class SalesOrderDetailPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Order Details',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface)),
+        title: Text(
+          'Order Receipt',
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(color: AppColors.onSurface),
+        ),
         backgroundColor: AppColors.surface.withOpacity(0.9),
-        elevation: 0, scrolledUnderElevation: 0,
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       body: orderAsync.when(
         data: (order) => ListView(
@@ -53,26 +58,38 @@ class SalesOrderDetailPage extends ConsumerWidget {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryContainer],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(order.orderNumber,
-                        style: Theme.of(context)
-                            .textTheme.headlineSmall?.copyWith(color: Colors.white)),
+                    child: Text(
+                      order.orderNumber,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineSmall?.copyWith(color: Colors.white),
+                    ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.25),
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    child: Text(order.status.label,
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                    child: Text(
+                      order.status.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -89,10 +106,17 @@ class SalesOrderDetailPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Info',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.onSurface)),
+                  Text(
+                    'Order Info',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 1),
+                  Divider(
+                    color: AppColors.outlineVariant.withOpacity(0.5),
+                    height: 1,
+                  ),
                   const SizedBox(height: 12),
                   if (order.storeName != null)
                     _InfoRow('Store', order.storeName!),
@@ -111,8 +135,12 @@ class SalesOrderDetailPage extends ConsumerWidget {
 
             // Items
             if (order.items != null && order.items!.isNotEmpty) ...[
-              Text('Items',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.onSurface)),
+              Text(
+                'Items',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: AppColors.onSurface),
+              ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -129,35 +157,65 @@ class SalesOrderDetailPage extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                item.productName ?? 'Product #${item.productId}',
+                                item.productName ??
+                                    'Product #${item.productId}',
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(color: AppColors.onSurface),
                               ),
                             ),
-                            Text('x${item.quantity}',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: AppColors.onSurfaceVariant)),
+                            Text(
+                              'x${item.quantity}',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.onSurfaceVariant),
+                            ),
                             const SizedBox(width: 16),
                             Text(
                               '\$${item.lineTotal.toStringAsFixed(2)}',
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: AppColors.onSurface, fontWeight: FontWeight.w700),
+                                  ?.copyWith(
+                                    color: AppColors.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                             ),
                           ],
                         ),
                       ),
-                    Divider(color: AppColors.outlineVariant.withOpacity(0.5), height: 20),
-                    _InfoRow('Subtotal', '\$${order.subtotal.toStringAsFixed(2)}'),
-                    if (order.discountAmount != null && order.discountAmount! > 0)
-                      _InfoRow('Discount', '-\$${order.discountAmount!.toStringAsFixed(2)}'),
+                    Divider(
+                      color: AppColors.outlineVariant.withOpacity(0.5),
+                      height: 20,
+                    ),
+                    _InfoRow(
+                      'Subtotal',
+                      '\$${order.subtotal.toStringAsFixed(2)}',
+                    ),
+                    if (order.discountAmount != null &&
+                        order.discountAmount! > 0)
+                      _InfoRow(
+                        'Discount',
+                        '-\$${order.discountAmount!.toStringAsFixed(2)}',
+                      ),
                     if (order.taxAmount != null && order.taxAmount! > 0)
-                      _InfoRow('Tax', '\$${order.taxAmount!.toStringAsFixed(2)}'),
-                    _InfoRow('Total', '\$${order.totalAmount.toStringAsFixed(2)}'),
-                    if (order.totalPaid != null) _InfoRow('Paid', '\$${order.totalPaid!.toStringAsFixed(2)}'),
-                    if (order.balanceDue != null) _InfoRow('Balance Due', '\$${order.balanceDue!.toStringAsFixed(2)}'),
+                      _InfoRow(
+                        'Tax',
+                        '\$${order.taxAmount!.toStringAsFixed(2)}',
+                      ),
+                    _InfoRow(
+                      'Total',
+                      '\$${order.totalAmount.toStringAsFixed(2)}',
+                    ),
+                    if (order.totalPaid != null)
+                      _InfoRow(
+                        'Paid',
+                        '\$${order.totalPaid!.toStringAsFixed(2)}',
+                      ),
+                    if (order.balanceDue != null)
+                      _InfoRow(
+                        'Balance Due',
+                        '\$${order.balanceDue!.toStringAsFixed(2)}',
+                      ),
                   ],
                 ),
-              )
+              ),
             ],
             const SizedBox(height: 14),
 
@@ -166,7 +224,8 @@ class SalesOrderDetailPage extends ConsumerWidget {
               GestureDetector(
                 onTap: () => _confirmOrder(context, ref, order),
                 child: Container(
-                  width: double.infinity, height: 52,
+                  width: double.infinity,
+                  height: 52,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppColors.primary, AppColors.primaryContainer],
@@ -179,8 +238,13 @@ class SalesOrderDetailPage extends ConsumerWidget {
                     children: [
                       Icon(Icons.check_rounded, color: Colors.white, size: 18),
                       SizedBox(width: 8),
-                      Text('Confirm Order',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Confirm Order',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -191,7 +255,8 @@ class SalesOrderDetailPage extends ConsumerWidget {
               GestureDetector(
                 onTap: () => _deliverOrder(context, ref, order),
                 child: Container(
-                  width: double.infinity, height: 52,
+                  width: double.infinity,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(12),
@@ -200,10 +265,19 @@ class SalesOrderDetailPage extends ConsumerWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.local_shipping_rounded, color: Colors.white, size: 18),
+                      Icon(
+                        Icons.local_shipping_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
-                      Text('Mark Delivered',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Mark Delivered',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -215,7 +289,8 @@ class SalesOrderDetailPage extends ConsumerWidget {
               GestureDetector(
                 onTap: () => _cancelOrder(context, ref, order),
                 child: Container(
-                  width: double.infinity, height: 52,
+                  width: double.infinity,
+                  height: 52,
                   decoration: BoxDecoration(
                     color: AppColors.errorContainer,
                     borderRadius: BorderRadius.circular(12),
@@ -224,10 +299,19 @@ class SalesOrderDetailPage extends ConsumerWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.cancel_rounded, color: AppColors.error, size: 18),
+                      Icon(
+                        Icons.cancel_rounded,
+                        color: AppColors.error,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
-                      Text('Cancel Order',
-                          style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Cancel Order',
+                        style: TextStyle(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -235,34 +319,44 @@ class SalesOrderDetailPage extends ConsumerWidget {
             ],
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
   }
 
   Future<void> _confirmOrder(
-      BuildContext context, WidgetRef ref, SalesOrder order) async {
+    BuildContext context,
+    WidgetRef ref,
+    SalesOrder order,
+  ) async {
     final repo = ref.read(salesRepositoryProvider);
     await repo.confirmOrder(order.id);
     ref.invalidate(salesOrderDetailProvider(orderId));
   }
 
   Future<void> _deliverOrder(
-      BuildContext context, WidgetRef ref, SalesOrder order) async {
+    BuildContext context,
+    WidgetRef ref,
+    SalesOrder order,
+  ) async {
     final repo = ref.read(salesRepositoryProvider);
     await repo.deliverOrder(order.id);
     ref.invalidate(salesOrderDetailProvider(orderId));
   }
 
   Future<void> _cancelOrder(
-      BuildContext context, WidgetRef ref, SalesOrder order) async {
+    BuildContext context,
+    WidgetRef ref,
+    SalesOrder order,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cancel Order'),
-        content:
-            const Text('Are you sure you want to cancel this order?'),
+        content: const Text('Are you sure you want to cancel this order?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -298,9 +392,14 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant)),
-          Text(value,
-              style: tt.bodyMedium?.copyWith(color: AppColors.onSurface)),
+          Text(
+            label,
+            style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          Text(
+            value,
+            style: tt.bodyMedium?.copyWith(color: AppColors.onSurface),
+          ),
         ],
       ),
     );
