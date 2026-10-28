@@ -178,6 +178,8 @@ class RouteController extends Controller
 
     public function checkIn(CheckInRequest $request, StoreVisit $storeVisit): StoreVisitResource|JsonResponse
     {
+        $this->ensureOwnVisit($request, $storeVisit);
+
         try {
             $visit = $this->routeService->checkIn($storeVisit, $request->validated());
             return new StoreVisitResource($visit->load('store'));
@@ -191,6 +193,8 @@ class RouteController extends Controller
 
     public function checkOut(CheckOutRequest $request, StoreVisit $storeVisit): StoreVisitResource
     {
+        $this->ensureOwnVisit($request, $storeVisit);
+
         $visit = $this->routeService->checkOut($storeVisit, $request->validated());
 
         return new StoreVisitResource($visit->load('store'));
@@ -198,6 +202,8 @@ class RouteController extends Controller
 
     public function skipVisit(Request $request, StoreVisit $storeVisit): StoreVisitResource
     {
+        $this->ensureOwnVisit($request, $storeVisit);
+
         $request->validate([
             'reason' => ['required', 'string', 'max:500'],
         ]);
@@ -302,5 +308,11 @@ class RouteController extends Controller
             ->paginate($request->integer('per_page', 15));
 
         return RouteInstanceResource::collection($instances);
+    }
+
+    /** Only the assigned rep may change a visit (it also records their GPS position). */
+    private function ensureOwnVisit(Request $request, StoreVisit $storeVisit): void
+    {
+        abort_unless($request->user()->id === $storeVisit->user_id, 403, 'This visit is assigned to another user.');
     }
 }
