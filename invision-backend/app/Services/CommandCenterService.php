@@ -9,6 +9,7 @@ use App\Models\RouteInstance;
 use App\Models\SalesOrder;
 use App\Models\Store;
 use App\Models\StoreInventory;
+use App\Models\StoreVisit;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -198,7 +199,7 @@ class CommandCenterService
 
         $activeInstance = RouteInstance::with(['routePlan', 'visits.store'])
             ->where('user_id', $userId)
-            ->whereDate('started_at', today())
+            ->whereDate('route_date', today())
             ->latest()
             ->first();
 
@@ -241,6 +242,33 @@ class CommandCenterService
     }
 
     /**
+     * Today's field activity (check-ins, check-outs, skips), newest first.
+     */
+    public function getRecentActivity(int $limit = 30): Collection
+    {
+        return StoreVisit::with(['user:id,first_name,last_name', 'store:id,name'])
+            ->where(fn ($q) => $q
+                ->whereDate('checked_in_at', today())
+                ->orWhere(fn ($q) => $q->whereNotNull('skip_reason')->whereDate('updated_at', today())))
+            ->latest('updated_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (StoreVisit $v) => [
+                'visit_id' => $v->id,
+                'user_id' => $v->user_id,
+                'user_name' => $v->user?->full_name,
+                'store_id' => $v->store_id,
+                'store_name' => $v->store?->name,
+                'status' => $v->status->value,
+                'checkin_at' => $v->checked_in_at?->toIso8601String(),
+                'checkout_at' => $v->checked_out_at?->toIso8601String(),
+                'duration_minutes' => $v->duration_minutes,
+                'skip_reason' => $v->skip_reason,
+                'at' => ($v->checked_out_at ?? $v->checked_in_at ?? $v->updated_at)?->toIso8601String(),
+            ]);
+    }
+
+    /**
      * Dashboard stats for the command center.
      */
     public function getDashboardStats(): array
@@ -262,7 +290,7 @@ class CommandCenterService
             ->distinct('user_id')
             ->count('user_id');
 
-        $activeRoutes = RouteInstance::whereDate('started_at', today())
+        $activeRoutes = RouteInstance::whereDate('route_date', today())
             ->where('status', 'in_progress')
             ->count();
 

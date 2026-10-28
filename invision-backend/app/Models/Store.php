@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Store extends Model
 {
@@ -30,6 +31,18 @@ class Store extends Model
         'profile',
         'is_active',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Store $store) {
+            $store->qr_code ??= self::generateQrCode();
+        });
+    }
+
+    public static function generateQrCode(): string
+    {
+        return 'STR-'.Str::upper(Str::random(12));
+    }
 
     protected function casts(): array
     {

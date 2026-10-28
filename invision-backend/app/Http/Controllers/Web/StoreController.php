@@ -90,6 +90,16 @@ class StoreController extends Controller
             ->with('success', 'Store deleted successfully.');
     }
 
+    public function regenerateQr(Store $store): RedirectResponse
+    {
+        $this->authorize('update', $store);
+
+        $store->update(['qr_code' => Store::generateQrCode()]);
+
+        return redirect()->route('stores.show', $store)
+            ->with('success', 'New QR code generated. Print and replace the old label at the store.');
+    }
+
     public function assignProductsView(Store $store): View
     {
         $this->authorize('update', $store);

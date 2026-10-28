@@ -17,6 +17,7 @@ class RoutePlanResource extends JsonResource
             'assigned_to' => $this->assigned_to,
             'assigned_user' => new UserResource($this->whenLoaded('assignedUser')),
             'frequency' => $this->frequency,
+            'work_days' => $this->work_days,
             'start_date' => $this->start_date?->toDateString(),
             'end_date' => $this->end_date?->toDateString(),
             'status' => $this->status,

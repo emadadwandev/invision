@@ -85,6 +85,9 @@ class RouteController extends Controller
 
         $request->validate([
             'store_id' => ['required', 'exists:stores,id'],
+            'day_of_week' => ['nullable', 'integer', 'between:1,7'],
+            'week_number' => ['nullable', 'integer', 'between:1,4'],
+            'week_start' => ['nullable', 'date'],
             'visit_order' => ['nullable', 'integer', 'min:1'],
             'expected_duration_minutes' => ['nullable', 'integer', 'min:1', 'max:480'],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -140,6 +143,10 @@ class RouteController extends Controller
         ]);
 
         $instance = $this->routeService->createInstance($routePlan, $request->input('route_date'));
+
+        if (! $instance) {
+            return response()->json(['message' => 'No stores are scheduled on this date for this route.'], 422);
+        }
 
         return (new RouteInstanceResource($instance))
             ->response()
@@ -208,7 +215,7 @@ class RouteController extends Controller
 
         // Batch logging
         if ($request->has('logs')) {
-            $logs = collect($request->input('logs'))->map(fn ($log) => array_merge($log, [
+            $logs = collect($request->validated('logs'))->map(fn ($log) => array_merge($log, [
                 'tenant_id' => $user->tenant_id,
                 'user_id' => $user->id,
             ]))->all();
@@ -258,7 +265,8 @@ class RouteController extends Controller
 
         // Auto-create an instance from the assigned plan if none exists for today
         if (! $instance) {
-            $plan = RoutePlan::with('routeStores')
+            // A rep may have several plans (e.g. different weekdays); use the first with stores today
+            $plans = RoutePlan::with('routeStores')
                 ->where('assigned_to', $user->id)
                 ->where('status', RouteStatus::Published)
                 ->whereDate('start_date', '<=', $today)
@@ -266,10 +274,12 @@ class RouteController extends Controller
                     $q->whereNull('end_date')
                       ->orWhereDate('end_date', '>=', $today);
                 })
-                ->first();
+                ->get();
 
-            if ($plan) {
-                $instance = $this->routeService->createInstance($plan, $today);
+            foreach ($plans as $plan) {
+                if ($instance = $this->routeService->createInstance($plan, $today)) {
+                    break;
+                }
             }
         }
 

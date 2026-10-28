@@ -56,17 +56,27 @@ class RouteService
         $plan = RoutePlan::create($data);
 
         foreach ($stores as $i => $storeData) {
-            $plan->routeStores()->create([
-                'store_id' => $storeData['store_id'],
-                'visit_order' => $storeData['visit_order'] ?? ($i + 1),
-                'expected_duration_minutes' => $storeData['expected_duration_minutes'] ?? null,
-                'notes' => $storeData['notes'] ?? null,
-            ]);
+            $plan->routeStores()->create($this->storeRow($storeData, $i + 1));
         }
 
         $plan->recalculateTotalStores();
 
         return $plan->load(['assignedUser', 'routeStores.store']);
+    }
+
+    private function storeRow(array $storeData, int $defaultOrder): array
+    {
+        $weekStart = $storeData['week_start'] ?? null;
+
+        return [
+            'store_id' => $storeData['store_id'],
+            'day_of_week' => $storeData['day_of_week'] ?? null,
+            'week_number' => $storeData['week_number'] ?? null,
+            'week_start' => $weekStart ? Carbon::parse($weekStart)->startOfWeek()->toDateString() : null,
+            'visit_order' => $storeData['visit_order'] ?? $defaultOrder,
+            'expected_duration_minutes' => $storeData['expected_duration_minutes'] ?? null,
+            'notes' => $storeData['notes'] ?? null,
+        ];
     }
 
     public function updatePlan(RoutePlan $plan, array $data): RoutePlan
@@ -80,12 +90,7 @@ class RouteService
             $plan->routeStores()->delete();
 
             foreach ($stores as $i => $storeData) {
-                $plan->routeStores()->create([
-                    'store_id' => $storeData['store_id'],
-                    'visit_order' => $storeData['visit_order'] ?? ($i + 1),
-                    'expected_duration_minutes' => $storeData['expected_duration_minutes'] ?? null,
-                    'notes' => $storeData['notes'] ?? null,
-                ]);
+                $plan->routeStores()->create($this->storeRow($storeData, $i + 1));
             }
 
             $plan->recalculateTotalStores();
@@ -103,12 +108,7 @@ class RouteService
     {
         $maxOrder = $plan->routeStores()->max('visit_order') ?? 0;
 
-        $routeStore = $plan->routeStores()->create([
-            'store_id' => $data['store_id'],
-            'visit_order' => $data['visit_order'] ?? ($maxOrder + 1),
-            'expected_duration_minutes' => $data['expected_duration_minutes'] ?? null,
-            'notes' => $data['notes'] ?? null,
-        ]);
+        $routeStore = $plan->routeStores()->create($this->storeRow($data, $maxOrder + 1));
 
         $plan->recalculateTotalStores();
 
@@ -163,16 +163,24 @@ class RouteService
         return $query->latest('route_date')->paginate($perPage);
     }
 
-    public function createInstance(RoutePlan $plan, string $date): RouteInstance
+    /** Returns null when the plan has no stores scheduled on $date. */
+    public function createInstance(RoutePlan $plan, string $date): ?RouteInstance
     {
+        $plan->load('routeStores');
+        $dayStores = $plan->storesForDate($date);
+
         $existing = RouteInstance::where('route_plan_id', $plan->id)
             ->where('user_id', $plan->assigned_to)
             ->whereDate('route_date', $date)
             ->first();
 
         if ($existing) {
-            $this->syncInstanceVisits($existing, $plan);
+            $this->syncInstanceVisits($existing, $plan, $dayStores);
             return $existing->load(['routePlan', 'visits.store']);
+        }
+
+        if ($dayStores->isEmpty()) {
+            return null;
         }
 
         $instance = RouteInstance::create([
@@ -181,10 +189,10 @@ class RouteService
             'user_id' => $plan->assigned_to,
             'route_date' => $date,
             'status' => RouteStatus::Published,
-            'total_visits' => $plan->total_stores,
+            'total_visits' => $dayStores->count(),
         ]);
 
-        foreach ($plan->routeStores as $routeStore) {
+        foreach ($dayStores as $routeStore) {
             $instance->visits()->create([
                 'tenant_id' => $plan->tenant_id,
                 'store_id' => $routeStore->store_id,
@@ -198,15 +206,14 @@ class RouteService
     }
 
     /**
-     * Sync an existing route instance's visits to match the current plan stores.
+     * Sync an existing route instance's visits to match the plan's stores for that day.
      * Preserves visits that are already checked-in, completed, or skipped.
      * Removes pending visits for stores removed from the plan.
      * Adds new pending visits for stores added to the plan.
      */
-    private function syncInstanceVisits(RouteInstance $instance, RoutePlan $plan): void
+    private function syncInstanceVisits(RouteInstance $instance, RoutePlan $plan, \Illuminate\Support\Collection $dayStores): void
     {
-        $plan->loadMissing('routeStores');
-        $planStoreIds = $plan->routeStores->pluck('store_id');
+        $planStoreIds = $dayStores->pluck('store_id');
 
         // Remove pending visits for stores no longer in the plan
         $instance->visits()
@@ -218,7 +225,7 @@ class RouteService
         $existingStoreIds = $instance->visits()->pluck('store_id');
 
         // Add visits for new stores not yet in this instance
-        foreach ($plan->routeStores as $routeStore) {
+        foreach ($dayStores as $routeStore) {
             if ($existingStoreIds->contains($routeStore->store_id)) {
                 // Update visit order in case it changed
                 $instance->visits()
@@ -312,6 +319,8 @@ class RouteService
             $this->startRoute($instance);
         }
 
+        $this->logVisitPosition($visit, $data);
+
         // Broadcast visit status change
         VisitStatusChanged::dispatch(
             $visit->tenant_id ?? $instance->tenant_id,
@@ -346,6 +355,8 @@ class RouteService
         $instance = $visit->routeInstance;
         $completedCount = $instance->visits()->where('status', VisitStatus::Completed)->count();
         $instance->update(['completed_visits' => $completedCount]);
+
+        $this->logVisitPosition($visit, $data);
 
         // Auto-complete route if all visits done
         $totalVisits = $instance->total_visits;
@@ -388,6 +399,22 @@ class RouteService
     }
 
     // ─── GPS Tracking ─────────────────────────────────────────
+
+    /** Check-in/out positions feed live tracking even when duty tracking isn't running. */
+    private function logVisitPosition(StoreVisit $visit, array $data): void
+    {
+        if (! isset($data['latitude'], $data['longitude'])) {
+            return;
+        }
+
+        $this->logGps([
+            'tenant_id' => $visit->tenant_id,
+            'user_id' => $visit->user_id,
+            'route_instance_id' => $visit->route_instance_id,
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+        ]);
+    }
 
     public function logGps(array $data): GpsTrackingLog
     {

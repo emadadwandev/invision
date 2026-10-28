@@ -78,7 +78,51 @@ class GpsTrackingController extends StateNotifier<GpsTrackingState> {
   final List<Map<String, dynamic>> _pendingLogs = [];
   Timer? _batchTimer;
 
-  GpsTrackingController(this._ref) : super(const GpsTrackingState());
+  GpsTrackingController(this._ref) : super(const GpsTrackingState()) {
+    // Duty survives app restarts on the server; resume local tracking with it.
+    Future.microtask(_resumeIfDutyActive);
+  }
+
+  Future<void> _resumeIfDutyActive() async {
+    try {
+      final duty = await _ref.read(gpsTrackingRepositoryProvider).getActiveDuty();
+      if (!duty.active || state.isTracking || !mounted) return;
+      final locationService = _ref.read(locationServiceProvider);
+      if (!await locationService.ensurePermissions()) return;
+      _beginTracking(await locationService.getCurrentPosition());
+    } catch (_) {
+      // Offline or not authenticated yet; the user can start duty manually.
+    }
+  }
+
+  void _beginTracking(Position? position) {
+    final locationService = _ref.read(locationServiceProvider);
+    locationService.startTracking(
+      onPosition: _onPositionUpdate,
+      distanceFilter: 10,
+      intervalMs: 30000,
+    );
+
+    // Start batch upload timer (every 60 seconds)
+    _batchTimer?.cancel();
+    _batchTimer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => _flushPendingLogs(),
+    );
+
+    // Send the first fix right away so the command center sees the rep immediately
+    if (position != null) {
+      _onPositionUpdate(position);
+      _flushPendingLogs();
+    }
+
+    state = state.copyWith(
+      isTracking: true,
+      isDutyActive: true,
+      lastPosition: position,
+      error: null,
+    );
+  }
 
   /// Start duty and begin GPS tracking.
   Future<void> startDuty() async {
@@ -100,25 +144,7 @@ class GpsTrackingController extends StateNotifier<GpsTrackingState> {
         longitude: position?.longitude,
       );
 
-      // Start GPS tracking
-      locationService.startTracking(
-        onPosition: _onPositionUpdate,
-        distanceFilter: 10,
-        intervalMs: 30000,
-      );
-
-      // Start batch upload timer (every 60 seconds)
-      _batchTimer = Timer.periodic(
-        const Duration(seconds: 60),
-        (_) => _flushPendingLogs(),
-      );
-
-      state = state.copyWith(
-        isTracking: true,
-        isDutyActive: true,
-        lastPosition: position,
-        error: null,
-      );
+      _beginTracking(position);
     } catch (e) {
       state = state.copyWith(error: 'Failed to start duty: $e');
     }
@@ -161,9 +187,12 @@ class GpsTrackingController extends StateNotifier<GpsTrackingState> {
       'latitude': position.latitude,
       'longitude': position.longitude,
       'accuracy_meters': position.accuracy,
-      'speed_kmh': (position.speed * 3.6), // m/s to km/h
-      'bearing': position.heading,
-      'recorded_at': DateTime.now().toIso8601String(),
+      // Devices report -1 when speed/heading is unknown
+      if (position.speed >= 0) 'speed_kmh': position.speed * 3.6, // m/s to km/h
+      if (position.heading >= 0 && position.heading <= 360)
+        'bearing': position.heading,
+      // UTC with offset; a bare local time is misread by the UTC server
+      'recorded_at': DateTime.now().toUtc().toIso8601String(),
     });
 
     state = state.copyWith(

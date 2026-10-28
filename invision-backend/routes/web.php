@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('stores', StoreController::class);
     Route::get('stores/{store}/products', [StoreController::class, 'assignProductsView'])->name('stores.products.edit');
     Route::post('stores/{store}/products', [StoreController::class, 'syncProducts'])->name('stores.products.sync');
+    Route::post('stores/{store}/qr', [StoreController::class, 'regenerateQr'])->name('stores.qr.regenerate');
 
     // Geography (Areas, Zones, Districts, Cities)
     Route::prefix('geography')->name('geography.')->group(function () {
@@ -197,6 +198,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('command-center')->name('command-center.')->group(function () {
         Route::get('/', [CommandCenterController::class, 'index'])->name('index');
         Route::get('/field-force-json', [CommandCenterController::class, 'fieldForcePositionsJson'])->name('field-force-json');
+        Route::get('/activity-json', [CommandCenterController::class, 'activityJson'])->name('activity-json');
         Route::get('/stores/{storeId}/inquiry', [CommandCenterController::class, 'storeInquiry'])->name('store-inquiry');
         Route::get('/users/{userId}/activity', [CommandCenterController::class, 'userActivity'])->name('user-activity');
     });

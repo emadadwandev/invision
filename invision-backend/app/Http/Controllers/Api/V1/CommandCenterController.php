@@ -35,6 +35,11 @@ class CommandCenterController extends Controller
     /**
      * Get all stores with summary data for map pins.
      */
+    public function activity(): JsonResponse
+    {
+        return response()->json(['data' => $this->service->getRecentActivity()->values()]);
+    }
+
     public function storeMapData(): JsonResponse
     {
         $stores = $this->service->getStoreMapData();

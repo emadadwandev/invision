@@ -461,7 +461,39 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
     }
   }
 
-  Future<void> _checkIn(StoreVisit visit) async {
+  /// Scan first, then start the visit for whichever store on today's route matches.
+  Future<void> _scanToStartVisit() async {
+    final qrCode = (await context.push<String>('/scanner'))?.trim();
+    if (!mounted || qrCode == null || qrCode.isEmpty) return;
+
+    final visit = widget.instance.visits.cast<StoreVisit?>().firstWhere(
+      (v) => v?.store?.qrCode?.trim() == qrCode,
+      orElse: () => null,
+    );
+    String? problem;
+    if (visit == null) {
+      problem = 'This store is not on today’s route.';
+    } else if (visit.status == VisitStatus.checkedIn) {
+      await context.push('/visits/${visit.id}/capture');
+      ref.invalidate(myRouteTodayProvider);
+      return;
+    } else if (visit.status != VisitStatus.pending) {
+      problem = 'This store was already visited today.';
+    } else if (widget.instance.visits.any(
+      (v) => v.status == VisitStatus.checkedIn,
+    )) {
+      problem = 'Check out of your current store first.';
+    }
+    if (problem != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(problem)));
+      return;
+    }
+    await _checkIn(visit!, scannedCode: qrCode);
+  }
+
+  Future<void> _checkIn(StoreVisit visit, {String? scannedCode}) async {
     setState(() => _loading = true);
     try {
       final expectedQrCode = visit.store?.qrCode;
@@ -470,7 +502,7 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
           'This store has no QR code configured. Contact your manager.',
         );
       }
-      final qrCode = await context.push<String>('/scanner');
+      final qrCode = scannedCode ?? await context.push<String>('/scanner');
       if (!mounted || qrCode == null) return;
       if (qrCode.trim() != expectedQrCode.trim()) {
         throw Exception('The scanned QR code does not match this store.');
@@ -690,6 +722,17 @@ class _RouteBodyState extends ConsumerState<_RouteBody> {
                     )
                   : const Icon(Icons.play_arrow_rounded),
               label: const Text('Start route'),
+            ),
+          ),
+        ],
+        if (remaining > 0) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _loading ? null : _scanToStartVisit,
+              icon: const Icon(Icons.qr_code_scanner_rounded),
+              label: const Text('Scan store QR to start visit'),
             ),
           ),
         ],

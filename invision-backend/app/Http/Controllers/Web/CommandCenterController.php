@@ -21,8 +21,17 @@ class CommandCenterController extends Controller
         $stats = $this->service->getDashboardStats();
         $fieldForce = $this->service->getFieldForcePositions();
         $stores = $this->service->getStoreMapData();
+        $activity = $this->service->getRecentActivity();
 
-        return view('pages.command-center.index', compact('stats', 'fieldForce', 'stores'));
+        return view('pages.command-center.index', compact('stats', 'fieldForce', 'stores', 'activity'));
+    }
+
+    /**
+     * Today's activity feed JSON for AJAX refresh.
+     */
+    public function activityJson(): JsonResponse
+    {
+        return response()->json(['data' => $this->service->getRecentActivity()->values()]);
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Models\RouteInstance;
 use App\Models\RoutePlan;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\CommandCenterService;
 use App\Services\RouteService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -154,6 +155,11 @@ class RouteController extends Controller
         $date = $request->input('route_date');
         $instance = $this->routeService->createInstance($route, $date);
 
+        if (! $instance) {
+            return redirect()->route('routes.show', $route)
+                ->with('error', "No stores are scheduled on {$date} for this route.");
+        }
+
         $wasCreated = $instance->wasRecentlyCreated;
 
         return redirect()->route('routes.show', $route)
@@ -167,11 +173,9 @@ class RouteController extends Controller
 
     // ─── GPS Tracking (Live Map View) ─────────────────────────
 
-    public function tracking(Request $request): View
+    public function tracking(CommandCenterService $commandCenter): View
     {
-        $users = User::where('is_active', true)
-            ->whereIn('role', ['promoter', 'merchandiser', 'field_force', 'sales_representative'])
-            ->get();
+        $users = $commandCenter->getFieldForcePositions()->values();
 
         return view('pages.routes.tracking', compact('users'));
     }

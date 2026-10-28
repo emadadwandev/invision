@@ -80,6 +80,31 @@
         </div>
     </div>
 
+    <!-- Today's Activity Feed -->
+    <div class="mt-4 bg-white rounded-lg shadow" x-data="activityFeed(@js($activity->values()))" x-init="setInterval(() => refresh(), 30000)">
+        <div class="p-3 border-b bg-gray-50 flex justify-between items-center">
+            <h3 class="text-sm font-semibold text-gray-700">Today's Activity</h3>
+            <span class="text-xs text-gray-400">Auto-refreshes every 30s</span>
+        </div>
+        <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+            <template x-for="a in items" :key="a.visit_id">
+                <div class="px-3 py-2 flex items-center gap-3 text-sm hover:bg-indigo-50 cursor-pointer" @click="showUserTrail(a.user_id)">
+                    <span class="text-xs px-2 py-0.5 rounded font-medium"
+                          :class="{ 'bg-yellow-100 text-yellow-800': a.status === 'checked_in', 'bg-green-100 text-green-800': a.status === 'completed', 'bg-red-100 text-red-700': a.status === 'skipped' }"
+                          x-text="{ checked_in: 'Checked in', completed: 'Completed', skipped: 'Skipped' }[a.status] ?? a.status"></span>
+                    <span class="font-medium text-gray-900" x-text="a.user_name"></span>
+                    <span class="text-gray-500" x-text="'@ ' + (a.store_name ?? '')"></span>
+                    <span class="text-xs text-gray-400" x-show="a.duration_minutes" x-text="a.duration_minutes + ' min'"></span>
+                    <span class="text-xs text-gray-400" x-show="a.skip_reason" x-text="a.skip_reason"></span>
+                    <span class="ml-auto text-xs text-gray-400" x-text="a.at ? new Date(a.at).toLocaleTimeString() : ''"></span>
+                </div>
+            </template>
+            <template x-if="items.length === 0">
+                <div class="p-4 text-sm text-gray-400 text-center">No visits recorded today yet.</div>
+            </template>
+        </div>
+    </div>
+
     <!-- Store Inquiry Modal -->
     <div id="store-inquiry-modal" class="fixed inset-0 z-50 hidden" x-data="storeInquiry()">
         <div class="fixed inset-0 bg-black/50" @click="close()"></div>
@@ -319,6 +344,19 @@
                     const div = document.createElement('div');
                     div.appendChild(document.createTextNode(text));
                     return div.innerHTML;
+                },
+            };
+        }
+
+        // ─── Activity Feed ──────────────────────────────────────
+        function activityFeed(items) {
+            return {
+                items,
+                async refresh() {
+                    try {
+                        const res = await fetch('{{ route('command-center.activity-json') }}', { headers: { Accept: 'application/json' } });
+                        this.items = (await res.json()).data;
+                    } catch (e) { /* silent */ }
                 },
             };
         }

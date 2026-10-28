@@ -10,6 +10,9 @@ class RoutePlanStore extends Model
     protected $fillable = [
         'route_plan_id',
         'store_id',
+        'day_of_week',
+        'week_number',
+        'week_start',
         'visit_order',
         'expected_duration_minutes',
         'notes',
@@ -18,6 +21,9 @@ class RoutePlanStore extends Model
     protected function casts(): array
     {
         return [
+            'day_of_week' => 'integer',
+            'week_number' => 'integer',
+            'week_start' => 'date',
             'visit_order' => 'integer',
             'expected_duration_minutes' => 'integer',
         ];

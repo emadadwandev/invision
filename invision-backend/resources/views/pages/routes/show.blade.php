@@ -77,6 +77,10 @@
                         <p class="text-sm font-medium text-gray-900">{{ $rs->store->name }}</p>
                         <p class="text-xs text-gray-500">{{ $rs->store->code }} &middot; {{ $rs->store->address ?? '' }}</p>
                     </div>
+                    <span class="text-xs px-2 py-0.5 rounded {{ $rs->week_start ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-700' }}">
+                        {{ $rs->week_start ? 'Week of '.$rs->week_start->format('M d').' · ' : ($rs->week_number && $route->frequency->cycleWeeks() > 1 ? "Week {$rs->week_number} · " : '') }}
+                        {{ $rs->day_of_week ? now()->startOfWeek()->addDays($rs->day_of_week - 1)->format('l') : 'Every work day' }}
+                    </span>
                     @if($rs->expected_duration_minutes)
                     <span class="text-xs text-gray-400">~{{ $rs->expected_duration_minutes }} min</span>
                     @endif
@@ -84,6 +88,27 @@
                 @endforeach
             </div>
         @endif
+    </div>
+
+    {{-- Upcoming schedule preview (resolves recurrence + specific-week overrides) --}}
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Next 14 Days</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
+            @foreach(range(0, 13) as $offset)
+                @php
+                    $day = today()->addDays($offset);
+                    $dayStores = $route->storesForDate($day);
+                @endphp
+                <div class="p-2 rounded border {{ $dayStores->isEmpty() ? 'border-gray-100 bg-gray-50' : 'border-indigo-100 bg-indigo-50' }}">
+                    <p class="text-xs font-semibold text-gray-700">{{ $day->format('D, M d') }}</p>
+                    @forelse($dayStores as $rs)
+                        <p class="text-xs text-gray-600 truncate">{{ $rs->store->name }}</p>
+                    @empty
+                        <p class="text-xs text-gray-400">No visits</p>
+                    @endforelse
+                </div>
+            @endforeach
+        </div>
     </div>
 
     {{-- Generate Instance --}}

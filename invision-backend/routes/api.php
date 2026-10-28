@@ -247,6 +247,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/command-center/stats', [CommandCenterController::class, 'stats'])->name('api.v1.command-center.stats');
         Route::get('/command-center/field-force', [CommandCenterController::class, 'fieldForcePositions'])->name('api.v1.command-center.field-force');
         Route::get('/command-center/stores', [CommandCenterController::class, 'storeMapData'])->name('api.v1.command-center.stores');
+        Route::get('/command-center/activity', [CommandCenterController::class, 'activity'])->name('api.v1.command-center.activity');
         Route::get('/command-center/stores/{storeId}/inquiry', [CommandCenterController::class, 'storeInquiry'])->name('api.v1.command-center.store-inquiry');
         Route::get('/command-center/users/{userId}/activity', [CommandCenterController::class, 'userActivity'])->name('api.v1.command-center.user-activity');
 

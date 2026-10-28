@@ -26,6 +26,41 @@
             </dl>
         </div>
 
+        <div class="bg-white shadow rounded-lg p-6 lg:col-span-2">
+            <div class="flex items-start justify-between gap-6 flex-wrap">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-1">Store QR Code</h2>
+                    <p class="text-sm text-gray-500 mb-3">Print and stick this at the store. Field force scan it in the app to start the visit.</p>
+                    @if($store->qr_code)
+                        <p class="text-xs font-mono text-gray-700">{{ $store->qr_code }}</p>
+                        <div class="mt-4 flex gap-3">
+                            <button type="button" onclick="printStoreQr()" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Print QR</button>
+                            @can('update', $store)
+                            <form method="POST" action="{{ route('stores.qr.regenerate', $store) }}" onsubmit="return confirm('The old printed QR will stop working. Continue?')">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50">Regenerate</button>
+                            </form>
+                            @endcan
+                        </div>
+                    @else
+                        @can('update', $store)
+                        <form method="POST" action="{{ route('stores.qr.regenerate', $store) }}">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">Generate QR</button>
+                        </form>
+                        @endcan
+                    @endif
+                </div>
+                @if($store->qr_code)
+                <div id="store-qr-label" class="text-center">
+                    <div id="store-qr" class="w-48 h-48 mx-auto"></div>
+                    <p class="mt-1 text-sm font-semibold text-gray-900">{{ $store->name }}</p>
+                    <p class="text-xs text-gray-500">{{ $store->code }}</p>
+                </div>
+                @endif
+            </div>
+        </div>
+
         <div class="bg-white shadow rounded-lg p-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Contacts</h2>
             @if($store->contacts->isEmpty())
@@ -74,4 +109,29 @@
             </table>
         @endif
     </div>
+
+    @if($store->qr_code)
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" integrity="sha384-lQXOAyZwHXE55JFyrOMB7nY2Wv+m5ZWNtJcHrd1rceRQXAYNLak8ukN5TjBTcIwz" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const qr = qrcode(0, 'M');
+            qr.addData(@js($store->qr_code));
+            qr.make();
+            const el = document.getElementById('store-qr');
+            el.innerHTML = qr.createSvgTag({ scalable: true, margin: 2 });
+            el.firstElementChild.setAttribute('width', '100%');
+            el.firstElementChild.setAttribute('height', '100%');
+        });
+
+        function printStoreQr() {
+            const w = window.open('', '_blank', 'width=400,height=500');
+            w.document.write(`<html><head><title>QR</title></head><body style="font-family:sans-serif;text-align:center;padding:24px">${document.getElementById('store-qr-label').innerHTML}</body></html>`);
+            w.document.close();
+            w.focus();
+            w.print();
+        }
+    </script>
+    @endpush
+    @endif
 </x-layouts.app>
