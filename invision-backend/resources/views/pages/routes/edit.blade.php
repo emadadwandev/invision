@@ -63,7 +63,8 @@
         @include('pages.routes._schedule', [
             'frequency' => old('frequency', $route->frequency->value),
             'workDays' => array_map('intval', old('work_days', $route->work_days ?? [7, 1, 2, 3, 4])),
-            'initialStores' => old('stores') ? collect(old('stores'))->values() : $route->routeStores->map(fn ($rs) => ['store_id' => (string) $rs->store_id, 'day_of_week' => (string) ($rs->day_of_week ?? ''), 'week_number' => (string) ($rs->week_number ?? ''), 'week_start' => $rs->week_start?->toDateString() ?? '', 'duration' => $rs->expected_duration_minutes ?? '']),
+            'optimizeOrder' => (bool) old('optimize_order', $route->optimize_order),
+            'initialStores' => old('stores') ? collect(old('stores'))->values() : $route->formRows(),
         ])
 
         <div class="flex justify-end gap-3">

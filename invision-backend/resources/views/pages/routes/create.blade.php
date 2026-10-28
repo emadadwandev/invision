@@ -61,6 +61,7 @@
         @include('pages.routes._schedule', [
             'frequency' => old('frequency', 'weekly'),
             'workDays' => array_map('intval', old('work_days', [7, 1, 2, 3, 4])),
+            'optimizeOrder' => (bool) old('optimize_order', true),
             'initialStores' => collect(old('stores', []))->values(),
         ])
 

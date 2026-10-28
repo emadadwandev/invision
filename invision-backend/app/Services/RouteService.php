@@ -55,13 +55,24 @@ class RouteService
 
         $plan = RoutePlan::create($data);
 
-        foreach ($stores as $i => $storeData) {
-            $plan->routeStores()->create($this->storeRow($storeData, $i + 1));
+        $this->createStoreRows($plan, $stores);
+
+        return $plan->load(['assignedUser', 'routeStores.store']);
+    }
+
+    /** One plan row per visit day, so a store can be visited several times a week. */
+    private function createStoreRows(RoutePlan $plan, array $stores): void
+    {
+        foreach (array_values($stores) as $i => $storeData) {
+            $days = $plan->frequency === \App\Enums\VisitFrequency::Daily
+                ? []
+                : array_values(array_unique(array_filter((array) ($storeData['days'] ?? []))));
+            foreach ($days ?: [$storeData['day_of_week'] ?? null] as $day) {
+                $plan->routeStores()->create($this->storeRow(['day_of_week' => $day] + $storeData, $i + 1));
+            }
         }
 
         $plan->recalculateTotalStores();
-
-        return $plan->load(['assignedUser', 'routeStores.store']);
     }
 
     private function storeRow(array $storeData, int $defaultOrder): array
@@ -88,12 +99,7 @@ class RouteService
 
         if ($stores !== null) {
             $plan->routeStores()->delete();
-
-            foreach ($stores as $i => $storeData) {
-                $plan->routeStores()->create($this->storeRow($storeData, $i + 1));
-            }
-
-            $plan->recalculateTotalStores();
+            $this->createStoreRows($plan, $stores);
         }
 
         return $plan->load(['assignedUser', 'routeStores.store']);
@@ -166,7 +172,7 @@ class RouteService
     /** Returns null when the plan has no stores scheduled on $date. */
     public function createInstance(RoutePlan $plan, string $date): ?RouteInstance
     {
-        $plan->load('routeStores');
+        $plan->load('routeStores.store');
         $dayStores = $plan->storesForDate($date);
 
         $existing = RouteInstance::where('route_plan_id', $plan->id)
@@ -192,12 +198,12 @@ class RouteService
             'total_visits' => $dayStores->count(),
         ]);
 
-        foreach ($dayStores as $routeStore) {
+        foreach ($dayStores as $i => $routeStore) {
             $instance->visits()->create([
                 'tenant_id' => $plan->tenant_id,
                 'store_id' => $routeStore->store_id,
                 'user_id' => $plan->assigned_to,
-                'visit_order' => $routeStore->visit_order,
+                'visit_order' => $i + 1,
                 'status' => VisitStatus::Pending,
             ]);
         }
@@ -225,18 +231,18 @@ class RouteService
         $existingStoreIds = $instance->visits()->pluck('store_id');
 
         // Add visits for new stores not yet in this instance
-        foreach ($dayStores as $routeStore) {
+        foreach ($dayStores as $i => $routeStore) {
             if ($existingStoreIds->contains($routeStore->store_id)) {
                 // Update visit order in case it changed
                 $instance->visits()
                     ->where('store_id', $routeStore->store_id)
-                    ->update(['visit_order' => $routeStore->visit_order]);
+                    ->update(['visit_order' => $i + 1]);
             } else {
                 $instance->visits()->create([
                     'tenant_id' => $plan->tenant_id,
                     'store_id' => $routeStore->store_id,
                     'user_id' => $plan->assigned_to,
-                    'visit_order' => $routeStore->visit_order,
+                    'visit_order' => $i + 1,
                     'status' => VisitStatus::Pending,
                 ]);
             }

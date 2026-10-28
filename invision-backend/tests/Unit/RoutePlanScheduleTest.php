@@ -68,4 +68,17 @@ class RoutePlanScheduleTest extends TestCase
         $this->assertSame([9], $this->storeIds($plan, '2026-11-11'));
         $this->assertSame([1], $this->storeIds($plan, '2026-11-16')); // back to normal
     }
+
+    public function test_optimize_order_keeps_start_and_shortens_path(): void
+    {
+        // Stores on a line east of the start, listed in a zig-zag order; one has no GPS
+        $row = fn (int $id, ?float $lng) => (new RoutePlanStore(['store_id' => $id]))
+            ->setRelation('store', new \App\Models\Store(['gps_latitude' => $lng === null ? null : 24.7, 'gps_longitude' => $lng]));
+        $rows = collect([$row(1, 46.60), $row(4, 46.90), $row(2, 46.70), $row(9, null), $row(5, 47.00), $row(3, 46.80)]);
+
+        $optimized = RoutePlan::optimizeOrder($rows);
+
+        $this->assertSame([1, 2, 3, 4, 5, 9], $optimized->pluck('store_id')->all());
+        $this->assertLessThan(RoutePlan::pathKm($rows), RoutePlan::pathKm($optimized));
+    }
 }

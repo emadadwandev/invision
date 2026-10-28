@@ -91,25 +91,82 @@
     </div>
 
     {{-- Upcoming schedule preview (resolves recurrence + specific-week overrides) --}}
-    <div class="bg-white shadow rounded-lg p-6 mb-6">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Next 14 Days</h2>
+    @php
+        $preview = collect(range(0, 13))->map(function ($offset) use ($route) {
+            $day = today()->addDays($offset);
+            $dayStores = $route->storesForDate($day);
+
+            return [
+                'label' => $day->format('D, M d'),
+                'km' => App\Models\RoutePlan::pathKm($dayStores),
+                'stores' => $dayStores->map(fn ($rs) => [
+                    'name' => $rs->store->name,
+                    'lat' => $rs->store->gps_latitude !== null ? (float) $rs->store->gps_latitude : null,
+                    'lng' => $rs->store->gps_longitude !== null ? (float) $rs->store->gps_longitude : null,
+                ])->values(),
+            ];
+        });
+    @endphp
+    <div class="bg-white shadow rounded-lg p-6 mb-6" x-data="routePreview(@js($preview))" x-init="init()">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium text-gray-900">Next 14 Days</h2>
+            <span class="text-xs px-2 py-0.5 rounded {{ $route->optimize_order ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                {{ $route->optimize_order ? 'Order optimized by location' : 'Manual visit order' }}
+            </span>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
-            @foreach(range(0, 13) as $offset)
-                @php
-                    $day = today()->addDays($offset);
-                    $dayStores = $route->storesForDate($day);
-                @endphp
-                <div class="p-2 rounded border {{ $dayStores->isEmpty() ? 'border-gray-100 bg-gray-50' : 'border-indigo-100 bg-indigo-50' }}">
-                    <p class="text-xs font-semibold text-gray-700">{{ $day->format('D, M d') }}</p>
-                    @forelse($dayStores as $rs)
-                        <p class="text-xs text-gray-600 truncate">{{ $rs->store->name }}</p>
-                    @empty
-                        <p class="text-xs text-gray-400">No visits</p>
-                    @endforelse
-                </div>
-            @endforeach
+            <template x-for="(day, i) in days" :key="i">
+                <button type="button" @click="select(i)" class="text-left p-2 rounded border"
+                        :class="i === selected ? 'border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50' : (day.stores.length ? 'border-indigo-100 bg-indigo-50' : 'border-gray-100 bg-gray-50')">
+                    <p class="text-xs font-semibold text-gray-700" x-text="day.label"></p>
+                    <template x-for="(s, n) in day.stores" :key="n">
+                        <p class="text-xs text-gray-600 truncate" x-text="`${n + 1}. ${s.name}`"></p>
+                    </template>
+                    <p class="text-xs text-gray-400" x-show="!day.stores.length">No visits</p>
+                    <p class="text-xs text-indigo-600 mt-1" x-show="day.km > 0" x-text="`≈ ${day.km} km`"></p>
+                </button>
+            </template>
+        </div>
+        <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-2" x-text="selected === null ? '' : `${days[selected].label}: ${days[selected].stores.length} visits, ≈ ${days[selected].km} km straight-line`"></p>
+            <div x-ref="map" class="h-96 rounded-lg border border-gray-200 z-0"></div>
         </div>
     </div>
+
+    @push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    @endpush
+    @push('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+    function routePreview(days) {
+        return {
+            days, selected: null, map: null, layer: null,
+            init() {
+                this.map = L.map(this.$refs.map).setView([24.7136, 46.6753], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(this.map);
+                this.layer = L.layerGroup().addTo(this.map);
+                const first = this.days.findIndex(d => d.stores.length);
+                if (first >= 0) this.select(first);
+            },
+            select(i) {
+                this.selected = i;
+                this.layer.clearLayers();
+                const pts = [];
+                this.days[i].stores.forEach((s, n) => {
+                    if (s.lat === null) return;
+                    pts.push([s.lat, s.lng]);
+                    L.marker([s.lat, s.lng], { icon: L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13],
+                        html: `<div style="width:26px;height:26px;border-radius:50%;background:${n === 0 ? '#059669' : '#4f46e5'};color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)">${n + 1}</div>` }) })
+                        .bindTooltip(Object.assign(document.createElement("span"), { textContent: s.name })).addTo(this.layer);
+                });
+                if (pts.length > 1) L.polyline(pts, { color: '#4f46e5', weight: 3, opacity: .7 }).addTo(this.layer);
+                if (pts.length) this.map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 15 });
+            },
+        };
+    }
+    </script>
+    @endpush
 
     {{-- Generate Instance --}}
     @can('update', $route)

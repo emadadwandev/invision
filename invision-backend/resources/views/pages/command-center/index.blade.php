@@ -261,7 +261,7 @@
 
                         const popup = `<div class="store-popup">
                             <h4>${this.escapeHtml(store.name)}</h4>
-                            <div class="stat-row"><span>Code</span><span>${store.code || '-'}</span></div>
+                            <div class="stat-row"><span>Code</span><span>${this.escapeHtml(store.code || '-')}</span></div>
                             <div class="stat-row"><span>Orders</span><span>${store.sales.order_count}</span></div>
                             <div class="stat-row"><span>Total Sales</span><span>$${Number(store.sales.total_sales).toFixed(2)}</span></div>
                             <div class="stat-row"><span>Stock Units</span><span>${store.inventory.total_stock}</span></div>
@@ -303,7 +303,7 @@
                             : '';
                         const popup = `<div class="user-popup">
                             <h4>${this.escapeHtml(user.name)}</h4>
-                            <div style="font-size:12px;color:#6b7280;">${user.role_label}</div>
+                            <div style="font-size:12px;color:#6b7280;">${this.escapeHtml(user.role_label)}</div>
                             <div style="font-size:12px;margin-top:4px;"><span style="color:${color};">●</span> ${user.is_online ? 'Online' : 'Offline'}</div>
                             ${speed}${lastSeen}
                             <div style="margin-top:8px;text-align:center;">

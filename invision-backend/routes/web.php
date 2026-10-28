@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('teams', TeamController::class);
 
     // Stores
+    Route::get('stores/qr-labels', [StoreController::class, 'qrLabels'])->name('stores.qr-labels');
     Route::resource('stores', StoreController::class);
     Route::get('stores/{store}/products', [StoreController::class, 'assignProductsView'])->name('stores.products.edit');
     Route::post('stores/{store}/products', [StoreController::class, 'syncProducts'])->name('stores.products.sync');

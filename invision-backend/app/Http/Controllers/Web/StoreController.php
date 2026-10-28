@@ -90,6 +90,20 @@ class StoreController extends Controller
             ->with('success', 'Store deleted successfully.');
     }
 
+    /** Printable QR labels for the given stores (?ids[]=1&ids[]=2), generating missing codes. */
+    public function qrLabels(Request $request): View
+    {
+        $this->authorize('viewAny', Store::class);
+
+        $ids = array_filter(array_map('intval', (array) $request->input('ids', [])));
+        $stores = Store::whereIn('id', $ids)->orderBy('name')->get();
+
+        $stores->whereNull('qr_code')->each(fn (Store $s) => $this->authorize('update', $s));
+        $stores->whereNull('qr_code')->each(fn (Store $s) => $s->update(['qr_code' => Store::generateQrCode()]));
+
+        return view('pages.stores.qr-labels', compact('stores'));
+    }
+
     public function regenerateQr(Store $store): RedirectResponse
     {
         $this->authorize('update', $store);
